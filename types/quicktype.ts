@@ -6,23 +6,23 @@
 // match the expected interface, even if the JSON is valid.
 
 export type FinnAdFetch = {
-  docs: PromotedAd[];
+  docs: FinnAd[];
   filters: Filter[];
   metadata: Metadata;
   mapUrl: string;
   newMapUrl: string;
   pageMetadata: PageMetadata;
   resultHeading: string;
-  promotedAd: PromotedAd;
+  promotedAd: FinnAd;
 };
 
-export type PromotedAd = {
-  type: PromotedAdType;
+export type FinnAd = {
+  type: FinnAdType;
   id: string;
   main_search_key: MainSearchKey;
   heading: string;
   location: string;
-  image: PromotedAdImage;
+  image: FinnAdImage;
   flags: Flag[];
   timestamp: number;
   coordinates: Coordinates;
@@ -48,7 +48,7 @@ export type Coordinates = {
 
 export type Flag = "private" | "retailer" | "shipping_exists";
 
-export type PromotedAdImage = {
+export type FinnAdImage = {
   url: string;
   path: string;
   height: number;
@@ -90,7 +90,7 @@ export type Unit = "kr";
 
 export type TradeType = "Til salgs";
 
-export type PromotedAdType = "bap";
+export type FinnAdType = "bap";
 
 export type Filter = {
   display_name: string;
@@ -514,22 +514,22 @@ function r(name: string) {
 
 const typeMap: any = {
   "FinnAdFetch": o([
-    { json: "docs", js: "docs", typ: a(r("PromotedAd")) },
+    { json: "docs", js: "docs", typ: a(r("FinnAd")) },
     { json: "filters", js: "filters", typ: a(r("Filter")) },
     { json: "metadata", js: "metadata", typ: r("Metadata") },
     { json: "mapUrl", js: "mapUrl", typ: "" },
     { json: "newMapUrl", js: "newMapUrl", typ: "" },
     { json: "pageMetadata", js: "pageMetadata", typ: r("PageMetadata") },
     { json: "resultHeading", js: "resultHeading", typ: "" },
-    { json: "promotedAd", js: "promotedAd", typ: r("PromotedAd") },
+    { json: "promotedAd", js: "promotedAd", typ: r("FinnAd") },
   ], false),
-  "PromotedAd": o([
-    { json: "type", js: "type", typ: r("PromotedAdType") },
+  "FinnAd": o([
+    { json: "type", js: "type", typ: r("FinnAdType") },
     { json: "id", js: "id", typ: "" },
     { json: "main_search_key", js: "main_search_key", typ: r("MainSearchKey") },
     { json: "heading", js: "heading", typ: "" },
     { json: "location", js: "location", typ: "" },
-    { json: "image", js: "image", typ: r("PromotedAdImage") },
+    { json: "image", js: "image", typ: r("FinnAdImage") },
     { json: "flags", js: "flags", typ: a(r("Flag")) },
     { json: "timestamp", js: "timestamp", typ: 0 },
     { json: "coordinates", js: "coordinates", typ: r("Coordinates") },
@@ -559,7 +559,7 @@ const typeMap: any = {
     { json: "lat", js: "lat", typ: 3.14 },
     { json: "lon", js: "lon", typ: 3.14 },
   ], false),
-  "PromotedAdImage": o([
+  "FinnAdImage": o([
     { json: "url", js: "url", typ: "" },
     { json: "path", js: "path", typ: "" },
     { json: "height", js: "height", typ: 0 },
@@ -818,7 +818,7 @@ const typeMap: any = {
   "TradeType": [
     "Til salgs",
   ],
-  "PromotedAdType": [
+  "FinnAdType": [
     "bap",
   ],
   "Name": [

@@ -13,3 +13,52 @@ export function isFinnAd<T extends FinnAd>(obj: unknown): obj is T {
     "price" in obj && typeof obj.price === "object"
   );
 }
+
+const blacklist = [
+  "bialetti",
+  "integrert",
+  "automatisk",
+  "kapsel",
+  "kapsler",
+  "pod",
+  "nespresso",
+  "nescafe",
+  "aeropress",
+  "moka",
+  "tyrkisk",
+];
+
+function noneIncluded(arr1: string[], arr2: string[]): boolean {
+  return arr1.every((str1) =>
+    !arr2.some((str2) => str2.includes(str1)) && !arr2.includes(str1)
+  );
+}
+
+function stripDiacritics(str: string): string {
+  return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
+function stripQuotes(str: string): string {
+  return str.replace(/['"`´«»]/g, "");
+}
+
+function removeUnwantedAds(
+  blacklist: string[],
+  tradeType: string,
+): (ad: FinnAd) => boolean {
+  return (ad: FinnAd): boolean => {
+    const desc = stripQuotes(ad.heading);
+    const descArr = desc.split(" ").map((s: string) => s.toLowerCase()).map(
+      stripDiacritics,
+    );
+    const verdict = noneIncluded(blacklist, descArr) &&
+      ad.trade_type === tradeType;
+    return verdict;
+  };
+}
+
+const adFilter = removeUnwantedAds(blacklist, "Til salgs");
+
+export function isWantedValidAd(ad: FinnAd) {
+  return isFinnAd(ad) && adFilter(ad);
+}

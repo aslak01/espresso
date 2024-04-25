@@ -1,12 +1,11 @@
 import { assert } from "@std/assert/assert";
 import { parse } from "./parse.ts";
-import { isFinnAd } from "./validation.ts";
-import { Convert, FinnAdFetch } from "./quicktype.ts";
+import { isWantedValidAd } from "./validation.ts";
+import { Convert, FinnAdFetch } from "./types/quicktype.ts";
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
+// TODO: Learn that
 if (import.meta.main) {
-  // TODO: Learn that
-
   const start = performance.now();
   assert(
     Deno.args.length > 0 && Deno.args.length < 3,
@@ -32,7 +31,7 @@ if (import.meta.main) {
     seenIds.includes(ad.ad_id) === false
   );
   if (newAds.length === 0) end(start);
-  const validatedNewAds = newAds.filter(isFinnAd);
+  const validatedNewAds = newAds.filter(isWantedValidAd);
 
   const parsedNewAds = validatedNewAds.map(parse);
   const newIds = parsedNewAds.map((ad) => ad.id);
