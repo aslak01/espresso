@@ -1,5 +1,5 @@
 import type { FilteredAndMassagedFinnAd } from "./types/index.ts";
-import type { FinnAd } from "./quicktype.ts";
+import type { FinnAd } from "./types/quicktype.ts";
 
 export function parse(ad: FinnAd): FilteredAndMassagedFinnAd {
   const {
@@ -31,7 +31,7 @@ export function parse(ad: FinnAd): FilteredAndMassagedFinnAd {
   };
 }
 
-export function timestampToDatestring(dt: number) {
+function timestampToDatestring(dt: number) {
   const date = new Date(dt);
   const options: Intl.DateTimeFormatOptions = {
     day: "2-digit",
@@ -39,4 +39,8 @@ export function timestampToDatestring(dt: number) {
     year: "2-digit",
   };
   return date.toLocaleDateString("no-NO", options);
+}
+
+export function formatMsg(ad: FilteredAndMassagedFinnAd) {
+  return `**${ad.heading}**, ${ad.location}: ${ad.price}\n${ad.url}`;
 }

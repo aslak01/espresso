@@ -1,48 +1,86 @@
 import { assert } from "@std/assert/assert";
-import { parse } from "./parse.ts";
-import { isWantedValidAd } from "./validation.ts";
-import { Convert, FinnAdFetch } from "./types/quicktype.ts";
+import { formatMsg, parse } from "./parse.ts";
+import { isFinnAd, isWantedValidAd, removeUnwantedAds } from "./validation.ts";
+import { FinnAd } from "./types/quicktype.ts";
+import { blacklist, hookUrl, scrapeUrl } from "./consts.ts";
+import { sendWebhook } from "./webhook.ts";
+import { FilteredAndMassagedFinnAd } from "./types/index.ts";
+import { writeToCsv } from "./csv.ts";
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
 // TODO: Learn that
 if (import.meta.main) {
+  await main();
+}
+
+async function main() {
   const start = performance.now();
+  const inputUrl = scrapeUrl || Deno.args[0];
+  const outputUrl = hookUrl || Deno.args[1];
+
+  const seenAds = await import("./data/seen.json", {
+    with: { "type": "json" },
+  });
+  assert("ids" in seenAds.default, "Seen ads couldn't be imported.");
+
+  const seenIds: number[] = seenAds.default.ids;
+  assert(Array.isArray(seenIds), "Malformed seen ads data type.");
   assert(
-    Deno.args.length > 0 && Deno.args.length < 3,
-    "This program needs to be called with one or two parameters.",
+    seenIds.every((id) => typeof id === "number"),
+    "Malformed seen ads content.",
   );
-  const inputUrl = Deno.args[0];
-  const outputUrl = Deno.args[1] || "";
-
-  const seenAds = await import("./data/seen.json");
-  assert("ids" in seenAds, "Seen ads couldn't be imported.");
-
-  const seenIds = seenAds.ids;
-  assert(Array.isArray(seenIds), "Malformed seen ads.");
 
   const fetchData = await fetch(inputUrl);
   const fetchJson = await fetchData.json();
+  const ads = fetchJson.docs;
 
-  // Quicktype data import safety:
-  const data = Convert.toFinnAdFetch(fetchJson);
-  const fetchedAds = data.docs;
+  assert(ads.length > 0, "No ads found.");
 
-  const newAds = fetchedAds.filter((ad) =>
-    seenIds.includes(ad.ad_id) === false
+  // SEARCH_ID_BAP_ALL filters away "gis bort"
+  // 67 filters for private
+  const adFilter = removeUnwantedAds(
+    seenIds,
+    blacklist,
+    "Til salgs",
+    "SEARCH_ID_BAP_ALL",
+    67,
   );
-  if (newAds.length === 0) end(start);
-  const validatedNewAds = newAds.filter(isWantedValidAd);
 
-  const parsedNewAds = validatedNewAds.map(parse);
-  const newIds = parsedNewAds.map((ad) => ad.id);
+  function isWantedAd(ad: FinnAd) {
+    return isFinnAd(ad) && adFilter(ad);
+  }
 
-  const newUniqueIds = new Set([seenIds, ...newIds]);
+  const validatedNewAds = ads.filter(isWantedAd);
 
-  // TODO: Send new ads formatted to webhook
-  // TODO: Format and write new ads to csv
-  // TODO: Overwrite seenAds file with new unique ids
+  if (validatedNewAds.length === 0) return end(start);
 
-  end(start, newIds.length);
+  const parsedAds = validatedNewAds.map(parse);
+  const newIds = parsedAds.map((
+    ad: FilteredAndMassagedFinnAd,
+  ) => ad.id);
+
+  const newSeenIds = {
+    ids: Array.from(new Set([...seenIds, ...newIds])).sort((a, b) => a - b),
+  };
+
+  const writeIds = Deno.writeTextFile(
+    "./data/seen.json",
+    JSON.stringify(newSeenIds),
+  );
+
+  const writeCsv = writeToCsv(parsedAds, "./data/log.csv");
+
+  const messages = parsedAds.map(formatMsg);
+  const webhookPromises = messages.map((msg: string) =>
+    sendWebhook({ content: msg, destination: outputUrl })
+  );
+  const sendAllWebhooks = () => {
+    return Promise.all(webhookPromises);
+  };
+
+  await Promise.all([writeIds, sendAllWebhooks(), writeCsv]).then(() => {
+    return end(start, newIds.length);
+  });
 }
 
 function end(start: number, processedAds = 0) {
@@ -50,4 +88,6 @@ function end(start: number, processedAds = 0) {
   const delta = finish - start;
 
   console.log(`Processed ${processedAds} lines in ${delta} ms`);
+
+  return 0;
 }

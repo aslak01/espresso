@@ -14,20 +14,6 @@ export function isFinnAd<T extends FinnAd>(obj: unknown): obj is T {
   );
 }
 
-const blacklist = [
-  "bialetti",
-  "integrert",
-  "automatisk",
-  "kapsel",
-  "kapsler",
-  "pod",
-  "nespresso",
-  "nescafe",
-  "aeropress",
-  "moka",
-  "tyrkisk",
-];
-
 function noneIncluded(arr1: string[], arr2: string[]): boolean {
   return arr1.every((str1) =>
     !arr2.some((str2) => str2.includes(str1)) && !arr2.includes(str1)
@@ -38,27 +24,36 @@ function stripDiacritics(str: string): string {
   return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 
-function stripQuotes(str: string): string {
-  return str.replace(/['"`´«»]/g, "");
+function stripPunctuation(str: string): string {
+  return str.replace(/[^\w\s]|_/g, "");
 }
 
-function removeUnwantedAds(
+export function removeUnwantedAds(
+  seenList: number[],
   blacklist: string[],
   tradeType: string,
+  searchKey: string,
+  adType: number,
 ): (ad: FinnAd) => boolean {
   return (ad: FinnAd): boolean => {
-    const desc = stripQuotes(ad.heading);
-    const descArr = desc.split(" ").map((s: string) => s.toLowerCase()).map(
-      stripDiacritics,
+    // exit early if ad was already parsed at some other point
+    if (seenList.includes(ad.id)) return false;
+
+    const description = stripPunctuation(ad.heading).replace("-", " ");
+
+    const descriptionWords = description.split(" ").filter((word) =>
+      word !== ""
+    ).map(stripDiacritics).map(
+      (word) => word.trim().toLowerCase(),
     );
-    const verdict = noneIncluded(blacklist, descArr) &&
-      ad.trade_type === tradeType;
+    console.log(ad.heading);
+    console.log(descriptionWords);
+    const verdict = noneIncluded(blacklist, descriptionWords) &&
+      ad.trade_type === tradeType &&
+      ad.main_search_key === searchKey &&
+      ad.ad_type === adType;
+    console.log(ad);
+    console.log(verdict);
     return verdict;
   };
-}
-
-const adFilter = removeUnwantedAds(blacklist, "Til salgs");
-
-export function isWantedValidAd(ad: FinnAd) {
-  return isFinnAd(ad) && adFilter(ad);
 }
