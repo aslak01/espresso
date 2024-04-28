@@ -1,9 +1,9 @@
 import { assert } from "@std/assert/assert";
 import { formatMsg, parse } from "./parse.ts";
-import { isFinnAd, isWantedValidAd, removeUnwantedAds } from "./validation.ts";
+import { isFinnAd, removeUnwantedAds } from "./validation.ts";
 import { FinnAd } from "./types/quicktype.ts";
 import { blacklist, hookUrl, scrapeUrl } from "./consts.ts";
-import { sendWebhook } from "./webhook.ts";
+import { createRateLimitedQueue } from "./webhook.ts";
 import { FilteredAndMassagedFinnAd } from "./types/index.ts";
 import { writeToCsv } from "./csv.ts";
 
@@ -70,17 +70,17 @@ async function main() {
 
   const writeCsv = writeToCsv(parsedAds, "./data/log.csv");
 
-  const messages = parsedAds.map(formatMsg);
-  const webhookPromises = messages.map((msg: string) =>
-    sendWebhook({ content: msg, destination: outputUrl })
-  );
-  const sendAllWebhooks = () => {
-    return Promise.all(webhookPromises);
-  };
+  const messages = parsedAds.map(formatMsg).map((msg: string) => ({
+    content: msg,
+  }));
 
-  await Promise.all([writeIds, sendAllWebhooks(), writeCsv]).then(() => {
+  const queue = createRateLimitedQueue(outputUrl);
+  const sendWebhooks = queue.enqueueBatch(messages);
+
+  await Promise.all([writeIds, sendWebhooks, writeCsv]).then(() => {
     return end(start, newIds.length);
   });
+  return;
 }
 
 function end(start: number, processedAds = 0) {
