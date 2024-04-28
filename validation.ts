@@ -37,7 +37,7 @@ export function removeUnwantedAds(
 ): (ad: FinnAd) => boolean {
   return (ad: FinnAd): boolean => {
     // exit early if ad was already parsed at some other point
-    if (seenList.includes(ad.id)) return false;
+    if (seenList.includes(ad.ad_id)) return false;
 
     const description = stripPunctuation(ad.heading).replace("-", " ");
 
@@ -46,14 +46,10 @@ export function removeUnwantedAds(
     ).map(stripDiacritics).map(
       (word) => word.trim().toLowerCase(),
     );
-    console.log(ad.heading);
-    console.log(descriptionWords);
     const verdict = noneIncluded(blacklist, descriptionWords) &&
       ad.trade_type === tradeType &&
       ad.main_search_key === searchKey &&
       ad.ad_type === adType;
-    console.log(ad);
-    console.log(verdict);
     return verdict;
   };
 }
