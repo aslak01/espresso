@@ -32,7 +32,7 @@ async function main() {
   const args = parseArgs(Deno.args);
 
   const url = args.i || baseUrl;
-  assert(url, "InputURL needs to be defined.");
+  assert(url, "url needs to be defined.");
 
   const q = args.q || query;
   const lat = args.lat || latitude;

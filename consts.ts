@@ -1,4 +1,3 @@
-import { assert } from "jsr:@std/assert/assert";
 import { load } from "jsr:@std/dotenv";
 const env = await load();
 
@@ -16,11 +15,9 @@ export const marketplace = Deno.env.get("MARKETPLACE") || env["MARKETPLACE"];
 
 export async function blacklist(url = "./blacklist"): Promise<string[]> {
   const list = await Deno.readTextFile(url);
-  assert(list);
   const splitList = list.trim().split("\n").filter(Boolean).map((word) =>
     word.trim()
   );
-  assert(Array.isArray(splitList));
   return splitList;
 }
 

@@ -10,16 +10,6 @@ jobs:
   scheduled:
     runs-on: ubuntu-latest
     environment: scrape
-    env:
-      SCRAPE_BASE_URL: ${{ secrets.SCRAPE_BASE_URL }}
-      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-      Q: ${{ secrets.Q }}
-      CAT: ${{ secrets.CAT }}
-      S_CAT: ${{ secrets.S_CAT }}
-      RAD: ${{ secrets.RAD }}
-      MARKETPLACE: ${{ secrets.MARKETPLACE }}
-      LAT: ${{ secrets.LAT }}
-      LON: ${{ secrets.LON }}
     steps:
       - name: Setup deno
         uses: denoland/setup-deno@main
@@ -27,7 +17,17 @@ jobs:
           deno-version: v1.42.x
       - name: Check out repo
         uses: actions/checkout@v4
-      - name: Run Deno script
+      - name: Run script
+        env:
+          SCRAPE_BASE_URL: ${{ secrets.SCRAPE_BASE_URL }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          Q: ${{ secrets.Q }}
+          CAT: ${{ secrets.CAT }}
+          S_CAT: ${{ secrets.S_CAT }}
+          RAD: ${{ secrets.RAD }}
+          MARKETPLACE: ${{ secrets.MARKETPLACE }}
+          LAT: ${{ secrets.LAT }}
+          LON: ${{ secrets.LON }}
         run: deno task scrape
       - name: commit it
         uses: EndBug/add-and-commit@v9
