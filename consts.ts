@@ -1,4 +1,4 @@
-import { load } from "@std/dotenv";
+import { load } from "jsr:@std/dotenv";
 
 const env = await load();
 
@@ -26,4 +26,5 @@ export const blacklist = [
   "dualit",
   "kitchenaid",
   "kanne",
+  "ariete",
 ];

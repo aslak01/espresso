@@ -1,7 +1,7 @@
 type RateLimitInfo = {
   limit: number;
   remaining: number;
-  reset: number; // Time when the rate limit will reset
+  reset: number; // Timestamp
 };
 
 export function createRateLimitedQueue(url: string) {

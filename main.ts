@@ -1,4 +1,4 @@
-import { assert } from "@std/assert/assert";
+import { assert } from "jsr:@std/assert/assert";
 import { formatMsg, parse } from "./parse.ts";
 import { isFinnAd, removeUnwantedAds } from "./validation.ts";
 import { FinnAd } from "./types/quicktype.ts";
@@ -16,6 +16,7 @@ if (import.meta.main) {
 async function main() {
   const start = performance.now();
   const inputUrl = scrapeUrl || Deno.args[0];
+  assert(inputUrl, "InputURL needs to be defined.");
   const outputUrl = hookUrl || Deno.args[1];
 
   const seenAds = await import("./data/seen.json", {
@@ -70,16 +71,28 @@ async function main() {
 
   const writeCsv = writeToCsv(parsedAds, "./data/log.csv");
 
-  const messages = parsedAds.map(formatMsg).map((msg: string) => ({
-    content: msg,
-  }));
+  if (outputUrl) {
+    const messages = parsedAds.map(formatMsg).map((msg: string) => ({
+      content: msg,
+    }));
 
-  const queue = createRateLimitedQueue(outputUrl);
-  const sendWebhooks = queue.enqueueBatch(messages);
+    const queue = createRateLimitedQueue(outputUrl);
+    const sendWebhooks = queue.enqueueBatch(messages);
 
-  await Promise.all([writeIds, sendWebhooks, writeCsv]).then(() => {
+    await Promise.all([writeIds, sendWebhooks, writeCsv]).then(() => {
+      return end(start, newIds.length);
+    }).catch((err) => {
+      throw new Error(err);
+    });
+    return;
+  }
+
+  await Promise.all([writeIds, writeCsv]).then(() => {
     return end(start, newIds.length);
+  }).catch((err) => {
+    throw new Error(err);
   });
+
   return;
 }
 
