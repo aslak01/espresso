@@ -1,14 +1,19 @@
 ---
-name: Flat
+name: Scrape
 on:
   push:
     branches: [master]
   workflow_dispatch:
   schedule:
-    - cron: 11 */1 * * *  # 11 over hver time
+    - cron: 0 */1 * * *  # hver time
 env:
-  SCRAPE_URL: ${{ secrets.SCRAPE_URL }}
+  SCRAPE_BASE_URL: ${{ secrets.SCRAPE_BASE_URL }}
   WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+  Q: ${{ secrets.Q }}
+  CAT: ${{ secrets.CAT }}
+  S_CAT: ${{ secrets.S_CAT }}
+  RAD: ${{ secrets.RAD }}
+  MARKETPLACE: ${{ secrets.MARKETPLACE }}
   LAT: ${{ secrets.LAT }}
   LON: ${{ secrets.LON }}
 jobs:
@@ -22,7 +27,7 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
       - name: Run Deno script
-        run: deno task scrape -q espresso -lat ${{env.LAT}} -lon ${{env.LON}} -radi "30000"
+        run: deno task scrape
       - name: commit it
         uses: EndBug/add-and-commit@v9
         with:
