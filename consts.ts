@@ -25,4 +25,5 @@ export const blacklist = [
   "tassimo",
   "dualit",
   "kitchenaid",
+  "kanne",
 ];
