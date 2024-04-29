@@ -30,13 +30,17 @@ export async function readCsv(
     write: true,
     create: true,
   });
-  const csvData = [];
-  for await (const chunk of csvFile.readable) {
-    csvData.push(chunk);
+  const info = await csvFile.stat();
+  if (info.isFile) {
+    const csvData = [];
+    for await (const chunk of csvFile.readable) {
+      csvData.push(chunk);
+    }
+    const csvText = new TextDecoder().decode(...csvData);
+    const data = parse(csvText, {
+      skipFirstRow: true,
+    });
+    return data;
   }
-  const csvText = new TextDecoder().decode(...csvData);
-  const data = parse(csvText, {
-    skipFirstRow: true,
-  });
-  return data;
+  return [];
 }
