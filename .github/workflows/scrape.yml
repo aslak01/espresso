@@ -18,7 +18,7 @@ env:
   LON: ${{ secrets.LON }}
 jobs:
   scheduled:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Setup deno
         uses: denoland/setup-deno@main
