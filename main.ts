@@ -17,7 +17,7 @@ import {
 } from "./consts.ts";
 import { createRateLimitedQueue } from "./webhook.ts";
 import { FilteredAndMassagedFinnAd } from "./types/index.ts";
-import { writeToCsv } from "./csv.ts";
+import { readCsv, writeToCsv } from "./csv.ts";
 import { parseParams } from "./query_parser.ts";
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
@@ -65,17 +65,19 @@ async function main() {
 
   d && console.log("filtering ads with words", filters);
 
-  const seenAds = await import("./data/seen.json", {
-    with: { "type": "json" },
-  });
-  assert("ids" in seenAds.default, "Seen ads couldn't be imported.");
-  const seenIds: number[] = seenAds.default.ids;
-  assert(Array.isArray(seenIds), "Malformed seen ads data type.");
-  assert(
-    seenIds.every((id) => typeof id === "number"),
-    "Malformed seen ads content.",
-  );
-  d && console.log("Already saw", seenIds.length, "ads");
+  const q_fn = q.replace(" ", "_");
+
+  const seenAds = await readCsv(`./data/${q_fn}.csv`);
+  const seenIds = seenAds.map((ad) => Number(ad.id));
+
+  if (seenIds && seenIds.length) {
+    assert(Array.isArray(seenIds), "Malformed seen ads data type.");
+    assert(
+      seenIds.every((id) => typeof id === "number"),
+      "Malformed seen ads content.",
+    );
+    d && console.log("Already saw", seenIds.length, "ads");
+  }
 
   const fetchData = await fetch(inputUrl);
   const fetchJson = await fetchData.json();
@@ -105,16 +107,7 @@ async function main() {
     ad: FilteredAndMassagedFinnAd,
   ) => ad.id);
 
-  const newSeenIds = {
-    ids: Array.from(new Set([...seenIds, ...newIds])).sort((a, b) => a - b),
-  };
-
-  const writeIds = Deno.writeTextFile(
-    "./data/seen.json",
-    JSON.stringify(newSeenIds),
-  );
-
-  const writeCsv = writeToCsv(parsedAds, "./data/log.csv");
+  const writeCsv = writeToCsv(parsedAds, `./data/${q_fn}.csv`);
 
   if (outputUrl) {
     const messages = parsedAds.map(formatMsg).map((msg: string) => ({
@@ -124,7 +117,7 @@ async function main() {
     const queue = createRateLimitedQueue(outputUrl);
     const sendWebhooks = queue.enqueueBatch(messages);
 
-    await Promise.all([writeIds, sendWebhooks, writeCsv]).then(() => {
+    await Promise.all([sendWebhooks, writeCsv]).then(() => {
       return end(start, newIds.length);
     }).catch((err) => {
       throw new Error(err);
@@ -132,7 +125,7 @@ async function main() {
     return 1;
   }
 
-  await Promise.all([writeIds, writeCsv]).then(() => {
+  await Promise.all([writeCsv]).then(() => {
     return end(start, newIds.length);
   }).catch((err) => {
     throw new Error(err);

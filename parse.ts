@@ -13,19 +13,22 @@ export function parse(ad: FinnAd): FilteredAndMassagedFinnAd {
     image,
   } = ad;
 
+  const { lat, lon } = coordinates;
+
+  const cleanedHeading = heading.replace(",", "");
   const nokPrice = price.amount;
-  const joinedCoordinates = coordinates.lat + "," + coordinates.lon;
   const img = image?.url || "";
   const date = timestampToDatestring(timestamp);
 
   return {
     id,
-    heading,
+    heading: cleanedHeading,
     location,
     date,
     timestamp,
     price: nokPrice,
-    coords: joinedCoordinates,
+    lat,
+    lon,
     url,
     img,
   };

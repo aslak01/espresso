@@ -1,11 +1,10 @@
-import { CsvStringifyStream } from "jsr:@std/csv";
+import { CsvStringifyStream, parse } from "jsr:@std/csv";
 
 export async function writeToCsv(
   data: Record<string, string | number>[],
   filePath: string,
 ) {
   const headers = Object.keys(data[0]);
-  console.log("headers", headers, "data", data);
 
   const file = await Deno.open(filePath, {
     write: true,
@@ -16,9 +15,28 @@ export async function writeToCsv(
   const readable = ReadableStream.from(data);
 
   await readable
-    .pipeThrough(new CsvStringifyStream({ separator: "\t", columns: headers }))
+    .pipeThrough(new CsvStringifyStream({ columns: headers }))
     .pipeThrough(new TextEncoderStream())
     .pipeTo(file.writable);
 
   return 0;
+}
+
+export async function readCsv(
+  filePath: string,
+): Promise<Record<string, string | undefined>[]> {
+  const csvFile = await Deno.open(filePath, {
+    read: true,
+    write: true,
+    create: true,
+  });
+  const csvData = [];
+  for await (const chunk of csvFile.readable) {
+    csvData.push(chunk);
+  }
+  const csvText = new TextDecoder().decode(...csvData);
+  const data = parse(csvText, {
+    skipFirstRow: true,
+  });
+  return data;
 }

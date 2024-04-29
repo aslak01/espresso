@@ -6,12 +6,13 @@ type FilteredFinnAd = Pick<
 >;
 
 type MassagedFinnAd = {
-  price: number;
-  coords: string;
   id: number;
+  price: number;
+  date: string;
+  lat: number;
+  lon: number;
   url: string;
   img: string;
-  date: string;
 };
 
 export type FilteredAndMassagedFinnAd =
