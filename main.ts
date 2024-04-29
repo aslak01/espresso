@@ -1,11 +1,25 @@
 import { assert } from "jsr:@std/assert/assert";
+import { parseArgs } from "jsr:@std/cli/parse-args";
 import { formatMsg, parse } from "./parse.ts";
 import { isFinnAd, removeUnwantedAds } from "./validation.ts";
 import { FinnAd } from "./types/quicktype.ts";
-import { blacklist, hookUrl, scrapeUrl } from "./consts.ts";
+import {
+  baseUrl,
+  blacklist,
+  cat,
+  hookUrl,
+  latitude,
+  longitude,
+  marketplace,
+  query,
+  rad,
+  s_cat,
+  search_key,
+} from "./consts.ts";
 import { createRateLimitedQueue } from "./webhook.ts";
 import { FilteredAndMassagedFinnAd } from "./types/index.ts";
 import { writeToCsv } from "./csv.ts";
+import { parseParams } from "./query_parser.ts";
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
 // TODO: Learn that
@@ -15,21 +29,54 @@ if (import.meta.main) {
 
 async function main() {
   const start = performance.now();
-  const inputUrl = scrapeUrl || Deno.args[0];
-  assert(inputUrl, "InputURL needs to be defined.");
-  const outputUrl = hookUrl || Deno.args[1];
+
+  const args = parseArgs(Deno.args);
+
+  const url = args.i || baseUrl;
+  assert(url, "InputURL needs to be defined.");
+
+  const q = args.q || query;
+  const lat = args.lat || latitude;
+  const lon = args.lon || longitude;
+  const radius = args.rad || rad;
+  const category = args.cat || cat;
+  const sub_category = args.sc || s_cat;
+  const market = args.m || marketplace;
+
+  const d = args.d;
+
+  const inputUrl = url +
+    parseParams(
+      search_key(market),
+      q,
+      lat,
+      lon,
+      radius,
+      category,
+      sub_category,
+    );
+
+  d && console.log("Scraping ", inputUrl);
+
+  const outputUrl = args.o || hookUrl;
+
+  d && console.log("Publishing to ", outputUrl);
+
+  const filters = await blacklist();
+
+  d && console.log("filtering ads with words", filters);
 
   const seenAds = await import("./data/seen.json", {
     with: { "type": "json" },
   });
   assert("ids" in seenAds.default, "Seen ads couldn't be imported.");
-
   const seenIds: number[] = seenAds.default.ids;
   assert(Array.isArray(seenIds), "Malformed seen ads data type.");
   assert(
     seenIds.every((id) => typeof id === "number"),
     "Malformed seen ads content.",
   );
+  d && console.log("Already saw", seenIds.length, "ads");
 
   const fetchData = await fetch(inputUrl);
   const fetchJson = await fetchData.json();
@@ -37,23 +84,22 @@ async function main() {
 
   assert(ads.length > 0, "No ads found.");
 
+  const wellFormedAds = ads.filter(isFinnAd);
+  d && console.log("found", wellFormedAds.length, "ads");
+
   // SEARCH_ID_BAP_ALL filters away "gis bort"
   // 67 filters for private
-  const adFilter = removeUnwantedAds(
+  const wantedAd = removeUnwantedAds(
     seenIds,
-    blacklist,
+    filters,
     "Til salgs",
     "SEARCH_ID_BAP_ALL",
     67,
   );
 
-  function isWantedAd(ad: FinnAd) {
-    return isFinnAd(ad) && adFilter(ad);
-  }
-
-  const validatedNewAds = ads.filter(isWantedAd);
-
+  const validatedNewAds = wellFormedAds.filter(wantedAd);
   if (validatedNewAds.length === 0) return end(start);
+  d && console.log("found", validatedNewAds, "interesting ads");
 
   const parsedAds = validatedNewAds.map(parse);
   const newIds = parsedAds.map((
@@ -84,7 +130,7 @@ async function main() {
     }).catch((err) => {
       throw new Error(err);
     });
-    return;
+    return 1;
   }
 
   await Promise.all([writeIds, writeCsv]).then(() => {
@@ -93,13 +139,12 @@ async function main() {
     throw new Error(err);
   });
 
-  return;
+  return 1;
 }
 
 function end(start: number, processedAds = 0) {
   const finish = performance.now();
   const delta = finish - start;
-
   console.log(`Processed ${processedAds} lines in ${delta} ms`);
 
   return 0;

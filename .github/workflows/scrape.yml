@@ -1,0 +1,29 @@
+---
+name: Flat
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+  schedule:
+    - cron: 11 */1 * * *  # 11 over hver time
+env:
+  SCRAPE_URL: ${{ secrets.SCRAPE_URL }}
+  WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+  LAT: ${{ secrets.LAT }}
+  LON: ${{ secrets.LON }}
+jobs:
+  scheduled:
+    runs-on: debian-latest
+    steps:
+      - name: Setup deno
+        uses: denoland/setup-deno@main
+        with:
+          deno-version: v1.42.x
+      - name: Check out repo
+        uses: actions/checkout@v4
+      - name: Run Deno script
+        run: deno task scrape -q espresso -lat ${{env.LAT}} -lon ${{env.LON}} -radi "30000"
+      - name: commit it
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
