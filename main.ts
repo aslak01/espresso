@@ -2,7 +2,6 @@ import { assert } from "jsr:@std/assert/assert";
 import { parseArgs } from "jsr:@std/cli/parse-args";
 import { formatMsg, parse } from "./parse.ts";
 import { isFinnAd, removeUnwantedAds } from "./validation.ts";
-import { FinnAd } from "./types/quicktype.ts";
 import {
   baseUrl,
   blacklist,

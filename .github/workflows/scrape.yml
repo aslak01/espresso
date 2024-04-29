@@ -6,19 +6,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: 0 */1 * * *  # hver time
-env:
-  SCRAPE_BASE_URL: ${{ secrets.SCRAPE_BASE_URL }}
-  WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-  Q: ${{ secrets.Q }}
-  CAT: ${{ secrets.CAT }}
-  S_CAT: ${{ secrets.S_CAT }}
-  RAD: ${{ secrets.RAD }}
-  MARKETPLACE: ${{ secrets.MARKETPLACE }}
-  LAT: ${{ secrets.LAT }}
-  LON: ${{ secrets.LON }}
 jobs:
   scheduled:
     runs-on: ubuntu-latest
+    environment: scrape
     steps:
       - name: Setup deno
         uses: denoland/setup-deno@main
