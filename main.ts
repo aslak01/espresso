@@ -60,10 +60,6 @@ async function main() {
 
   d && console.log("Publishing to ", outputUrl);
 
-  const filters = await blacklist();
-
-  d && console.log("filtering ads with words", filters);
-
   const q_fn = q.replace(" ", "_");
 
   const seenAds = await readCsv(`./data/${q_fn}.csv`);
@@ -91,7 +87,7 @@ async function main() {
   // 67 filters for private
   const wantedAd = removeUnwantedAds(
     seenIds,
-    filters,
+    blacklist,
     "Til salgs",
     "SEARCH_ID_BAP_ALL",
     67,

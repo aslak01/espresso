@@ -15,13 +15,7 @@ export const cat = config.category;
 export const s_cat = config.sub_category;
 export const section = config.section;
 
-export async function blacklist(url = "./blacklist"): Promise<string[]> {
-  const list = await Deno.readTextFile(url);
-  const splitList = list.trim().split("\n").filter(Boolean).map((word) =>
-    word.trim()
-  );
-  return splitList;
-}
+export const blacklist = config.blacklist;
 
 const searchkey_prefix = "SEARCH_ID_";
 const searchkey_postfix = {
