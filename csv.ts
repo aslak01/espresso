@@ -37,10 +37,13 @@ export async function readCsv(
       csvData.push(chunk);
     }
     const csvText = new TextDecoder().decode(...csvData);
-    const data = parse(csvText, {
-      skipFirstRow: true,
-    });
-    return data;
+    if (csvText && csvText.length) {
+      const data = parse(csvText, {
+        skipFirstRow: true,
+      });
+
+      return data;
+    }
   }
   return [];
 }
