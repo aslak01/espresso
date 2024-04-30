@@ -1,17 +1,19 @@
 import { load } from "jsr:@std/dotenv";
 const env = await load();
 
-export const baseUrl = Deno.env.get("SCRAPE_BASE_URL") ||
-  env["SCRAPE_BASE_URL"];
+export const baseUrl = "https://www.finn.no/api/search-qf?";
 export const hookUrl = Deno.env.get("WEBHOOK_URL") || env["WEBHOOK_URL"];
-
-export const query = Deno.env.get("Q") || env["Q"];
 export const latitude = Deno.env.get("LAT") || env["LAT"];
 export const longitude = Deno.env.get("LON") || env["LON"];
-export const rad = Deno.env.get("RAD") || env["RAD"];
-export const cat = Deno.env.get("CAT") || env["CAT"];
-export const s_cat = Deno.env.get("S_CAT") || env["S_CAT"];
-export const marketplace = Deno.env.get("MARKETPLACE") || env["MARKETPLACE"];
+
+const configJson = await import("../config.json", { with: { "type": "json" } });
+const config = configJson.default;
+
+export const query = config.query;
+export const rad = config.radius;
+export const cat = config.category;
+export const s_cat = config.sub_category;
+export const section = config.section;
 
 export async function blacklist(url = "./blacklist"): Promise<string[]> {
   const list = await Deno.readTextFile(url);

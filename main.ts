@@ -1,7 +1,7 @@
 import { assert } from "jsr:@std/assert/assert";
 import { parseArgs } from "jsr:@std/cli/parse-args";
-import { formatMsg, parse } from "./parse.ts";
-import { isFinnAd, removeUnwantedAds } from "./validation.ts";
+import { formatMsg, parse } from "./src/parse.ts";
+import { isFinnAd, removeUnwantedAds } from "./src/validation.ts";
 import {
   baseUrl,
   blacklist,
@@ -9,16 +9,15 @@ import {
   hookUrl,
   latitude,
   longitude,
-  marketplace,
   query,
   rad,
   s_cat,
   search_key,
-} from "./consts.ts";
-import { createRateLimitedQueue } from "./webhook.ts";
-import { FilteredAndMassagedFinnAd } from "./types/index.ts";
-import { readCsv, writeToCsv } from "./csv.ts";
-import { parseParams } from "./query_parser.ts";
+  section,
+} from "./src/consts.ts";
+import { createRateLimitedQueue } from "./src/webhook.ts";
+import { readCsv, writeToCsv } from "./src/csv.ts";
+import { parseParams } from "./src/query_parser.ts";
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
 // TODO: Learn that
@@ -40,13 +39,13 @@ async function main() {
   const radius = args.rad || rad;
   const category = args.cat || cat;
   const sub_category = args.sc || s_cat;
-  const market = args.m || marketplace;
+  const sec = args.m || section;
 
   const d = args.d;
 
   const inputUrl = url +
     parseParams(
-      search_key(market),
+      search_key(sec),
       q,
       lat,
       lon,
@@ -103,9 +102,6 @@ async function main() {
   d && console.log("found", validatedNewAds, "interesting ads");
 
   const parsedAds = validatedNewAds.map(parse);
-  const newIds = parsedAds.map((
-    ad: FilteredAndMassagedFinnAd,
-  ) => ad.id);
 
   const writeCsv = writeToCsv(parsedAds, `./data/${q_fn}.csv`);
 
@@ -118,7 +114,7 @@ async function main() {
     const sendWebhooks = queue.enqueueBatch(messages);
 
     await Promise.all([sendWebhooks, writeCsv]).then(() => {
-      return end(start, newIds.length);
+      return end(start, parsedAds.length);
     }).catch((err) => {
       throw new Error(err);
     });
@@ -126,7 +122,7 @@ async function main() {
   }
 
   await Promise.all([writeCsv]).then(() => {
-    return end(start, newIds.length);
+    return end(start, parsedAds.length);
   }).catch((err) => {
     throw new Error(err);
   });

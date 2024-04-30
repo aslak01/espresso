@@ -1,0 +1,29 @@
+{
+  "query": "espresso",
+  "category": "",
+  "sub_category": "1.93.3216",
+  "radius": "30000",
+  "section": "torget",
+  "blacklist": [
+    "bialetti",
+    "ibili",
+    "integrert",
+    "automatisk",
+    "kapsel",
+    "kapsler",
+    "pod",
+    "nespresso",
+    "nescafe",
+    "aeropress",
+    "moka",
+    "tyrkisk",
+    "electrolux",
+    "siemens",
+    "jura",
+    "tassimo",
+    "dualit",
+    "kitchenaid",
+    "kanne",
+    "ariete"
+  ]
+}
