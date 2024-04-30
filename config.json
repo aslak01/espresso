@@ -1,9 +1,8 @@
 {
   "query": "espresso",
+  "section": "torget",
   "category": "",
   "sub_category": "1.93.3216",
-  "radius": "30000",
-  "section": "torget",
   "blacklist": [
     "bialetti",
     "ibili",
@@ -25,5 +24,6 @@
     "kitchenaid",
     "kanne",
     "ariete"
-  ]
+  ],
+  "radius": "30000"
 }
