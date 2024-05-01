@@ -6,4 +6,4 @@ api:
 
 ### to define config with `pkl`:
 
-`pkl eval -f json params.pkl > config.json`
+`pkl eval -f json config.pkl > config.json`

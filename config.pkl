@@ -1,7 +1,15 @@
-query="espresso"
 section="torget"
-category=""
-sub_category="1.93.3216"
+
+params {
+  q = "espresso"
+  section = "torget"
+  category = ""
+  sub_category = "1.93.3216"
+  radius = "30000"
+  lat = "59.83"
+  lon = "10.43"
+}
+
 blacklist {
   "bialetti"
   "ibili"
@@ -24,4 +32,17 @@ blacklist {
   "kanne"
   "ariete"
 }
-radius="30000"
+
+keep {
+  "ad_id"
+  "heading"
+  "location"
+  "timestamp"
+  "price.amount"
+  "coordinates.lat"
+  "coordinates.lon"
+  "canonical_url"
+  "image.url"
+}
+
+

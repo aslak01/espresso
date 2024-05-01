@@ -1,23 +1,19 @@
 import { assert } from "jsr:@std/assert/assert";
 import { parseArgs } from "jsr:@std/cli/parse-args";
-import { formatMsg, parse } from "./src/parse.ts";
+import { formatDiscordMsg } from "./src/format.ts";
 import { isFinnAd, removeUnwantedAds } from "./src/validation.ts";
 import {
   baseUrl,
   blacklist,
-  cat,
   hookUrl,
-  latitude,
-  longitude,
-  query,
-  rad,
-  s_cat,
   search_key,
   section,
+  urlparams,
 } from "./src/consts.ts";
 import { createRateLimitedQueue } from "./src/webhook.ts";
 import { readCsv, writeToCsv } from "./src/csv.ts";
-import { parseParams } from "./src/query_parser.ts";
+import { assembleQuery } from "./src/query_parser.ts";
+import { parseAd } from "./src/dynamic_parser.ts";
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
 // TODO: Learn that
@@ -33,25 +29,15 @@ async function main() {
   const url = args.i || baseUrl;
   assert(url, "url needs to be defined.");
 
-  const q = args.q || query;
-  const lat = args.lat || latitude;
-  const lon = args.lon || longitude;
-  const radius = args.rad || rad;
-  const category = args.cat || cat;
-  const sub_category = args.sc || s_cat;
+  const params = urlparams;
   const sec = args.m || section;
 
   const d = args.d;
 
   const inputUrl = url +
-    parseParams(
+    assembleQuery(
       search_key(sec),
-      q,
-      lat,
-      lon,
-      radius,
-      category,
-      sub_category,
+      params,
     );
 
   d && console.log("Scraping ", inputUrl);
@@ -60,10 +46,10 @@ async function main() {
 
   d && console.log("Publishing to ", outputUrl);
 
-  const q_fn = q.replace(" ", "_");
+  const escapedQuery = params.q.replace(" ", "_");
 
-  const seenAds = await readCsv(`./data/${q_fn}.csv`);
-  const seenIds = seenAds.map((ad) => Number(ad.id));
+  const seenAds = await readCsv(`./data/${escapedQuery}.csv`);
+  const seenIds = seenAds.map((ad) => Number(ad.ad_id));
 
   if (seenIds && seenIds.length) {
     assert(Array.isArray(seenIds), "Malformed seen ads data type.");
@@ -97,15 +83,12 @@ async function main() {
   if (validatedNewAds.length === 0) return end(start);
   d && console.log("found", validatedNewAds, "interesting ads");
 
-  const parsedAds = validatedNewAds.map(parse);
+  const parsedAds = validatedNewAds.map(parseAd);
 
-  const writeCsv = writeToCsv(parsedAds, `./data/${q_fn}.csv`);
+  const writeCsv = writeToCsv(parsedAds, `./data/${escapedQuery}.csv`);
 
   if (outputUrl) {
-    const messages = parsedAds.map(formatMsg).map((msg: string) => ({
-      content: msg,
-    }));
-
+    const messages = parsedAds.map(formatDiscordMsg);
     const queue = createRateLimitedQueue(outputUrl);
     const sendWebhooks = queue.enqueueBatch(messages);
 
