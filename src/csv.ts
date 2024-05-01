@@ -39,12 +39,11 @@ export async function readCsv(
     for await (const chunk of csvFile.readable) {
       csvData.push(chunk);
     }
-    const csvText = new TextDecoder().decode(...csvData);
+    const csvText = new TextDecoder().decode(...csvData).trim();
     if (csvText && csvText.length) {
       const data = parse(csvText, {
         skipFirstRow: true,
       });
-
       return data;
     }
   }

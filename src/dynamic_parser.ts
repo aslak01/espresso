@@ -4,12 +4,12 @@ const keepList = configJson.default.keep;
 function parseObjectWithKeys(
   keysToKeep: string[],
 ): (
-  data: Record<string, string | number | object>,
+  ad: Record<string, string | number | object>,
 ) => Record<string, string | number> {
   return function (
-    data: Record<string, string | number | object>,
+    ad: Record<string, string | number | object>,
   ): Record<string, string | number> {
-    if (!data || typeof data !== "object" || !Array.isArray(keysToKeep)) {
+    if (!ad || typeof ad !== "object" || !Array.isArray(keysToKeep)) {
       return {};
     }
 
@@ -61,7 +61,7 @@ function parseObjectWithKeys(
     }
 
     keysToKeep.forEach((key) => {
-      const value = getValueForKey(key, data);
+      const value = getValueForKey(key, ad);
       if (value !== undefined) {
         parsedObject[key.split(".").pop()!] = value;
       }
@@ -72,7 +72,8 @@ function parseObjectWithKeys(
 }
 
 export function parseAd(
-  data: Record<string, string | number | object>,
+  ad: Record<string, string | number | object>,
 ): Record<string, string | number> {
-  return parseObjectWithKeys(keepList)(data);
+  console.log("parsing", ad.heading);
+  return parseObjectWithKeys(keepList)(ad);
 }

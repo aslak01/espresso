@@ -43,21 +43,12 @@ async function main() {
 
   const outputUrl = args.o || hookUrl;
 
-  d && console.log("Publishing to ", outputUrl);
+  d && outputUrl && console.log("Publishing to ", outputUrl);
 
   const escapedQuery = params.q.replace(" ", "_");
 
   const seenAds = await readCsv(`./data/${escapedQuery}.csv`);
   const seenIds = seenAds.map((ad) => Number(ad.ad_id));
-
-  if (seenIds && seenIds.length) {
-    assert(Array.isArray(seenIds), "Malformed seen ads data type.");
-    assert(
-      seenIds.every((id) => typeof id === "number"),
-      "Malformed seen ads content.",
-    );
-    d && console.log("Already saw", seenIds.length, "ads");
-  }
 
   const fetchData = await fetch(inputUrl);
   const fetchJson = await fetchData.json();
@@ -66,7 +57,7 @@ async function main() {
   assert(ads.length > 0, "No ads found.");
 
   const wellFormedAds = ads.filter(isFinnAd);
-  d && console.log("found", wellFormedAds.length, "ads");
+  console.log("found", wellFormedAds.length, "ads");
 
   // SEARCH_ID_BAP_ALL filters away "gis bort"
   // 67 filters for private
@@ -80,7 +71,7 @@ async function main() {
 
   const validatedNewAds = wellFormedAds.filter(wantedAd);
   if (validatedNewAds.length === 0) return end(start);
-  d && console.log("found", validatedNewAds, "interesting ads");
+  console.log("found", validatedNewAds, "interesting ads");
 
   const parsedAds = validatedNewAds.map(parseAd);
 
