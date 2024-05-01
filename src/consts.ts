@@ -8,7 +8,7 @@ export const hookUrl = Deno.env.get("WEBHOOK_URL") || env["WEBHOOK_URL"];
 
 const config = configJson.default;
 
-export const urlparams = config.urlparams;
+export const params = config.params;
 export const section = config.section;
 
 export const blacklist = config.blacklist;

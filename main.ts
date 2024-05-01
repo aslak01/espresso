@@ -6,9 +6,9 @@ import {
   baseUrl,
   blacklist,
   hookUrl,
+  params,
   search_key,
   section,
-  urlparams,
 } from "./src/consts.ts";
 import { createRateLimitedQueue } from "./src/webhook.ts";
 import { readCsv, writeToCsv } from "./src/csv.ts";
@@ -29,7 +29,6 @@ async function main() {
   const url = args.i || baseUrl;
   assert(url, "url needs to be defined.");
 
-  const params = urlparams;
   const sec = args.m || section;
 
   const d = args.d;
