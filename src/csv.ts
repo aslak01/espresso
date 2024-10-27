@@ -1,4 +1,5 @@
-import { parse, stringify } from "jsr:@std/csv";
+import { stringify } from "@std/csv/stringify";
+import { parse } from "@std/csv/parse";
 
 export async function writeToCsv(
   data: Record<string, string | number>[],
@@ -18,9 +19,7 @@ export async function writeToCsv(
   const csvData = stringify(data, { headers, columns });
 
   const readable = ReadableStream.from(csvData);
-  await readable
-    .pipeThrough(new TextEncoderStream())
-    .pipeTo(file.writable);
+  await readable.pipeThrough(new TextEncoderStream()).pipeTo(file.writable);
 
   return 0;
 }
@@ -33,19 +32,30 @@ export async function readCsv(
     write: true,
     create: true,
   });
-  const info = await csvFile.stat();
-  if (info.isFile) {
-    const csvData = [];
-    for await (const chunk of csvFile.readable) {
-      csvData.push(chunk);
-    }
-    const csvText = new TextDecoder().decode(...csvData).trim();
-    if (csvText && csvText.length) {
-      const data = parse(csvText, {
-        skipFirstRow: true,
-      });
-      return data;
-    }
+
+  const { isFile } = await csvFile.stat();
+
+  if (isFile !== true) {
+    return [];
   }
-  return [];
+
+  const csvData = [];
+
+  for await (const chunk of csvFile.readable) {
+    csvData.push(chunk);
+  }
+
+  const csvText = new TextDecoder().decode(...csvData).trim();
+
+  if (!csvText && !csvText.length) {
+    return [];
+  }
+
+  console.log(csvText);
+
+  const data = parse(csvText, {
+    skipFirstRow: true,
+  });
+
+  return data;
 }
