@@ -1,213 +1,238 @@
 {
-  "version": "3",
-  "packages": {
-    "specifiers": {
-      "jsr:@std/assert": "jsr:@std/assert@0.224.0",
-      "jsr:@std/assert@^0.224.0": "jsr:@std/assert@0.224.0",
-      "jsr:@std/bytes@^0.224.0": "jsr:@std/bytes@0.224.0",
-      "jsr:@std/cli": "jsr:@std/cli@0.224.0",
-      "jsr:@std/csv": "jsr:@std/csv@0.224.0",
-      "jsr:@std/dotenv": "jsr:@std/dotenv@0.224.0",
-      "jsr:@std/dotenv@^0.224.0": "jsr:@std/dotenv@0.224.0",
-      "jsr:@std/io@^0.224.0": "jsr:@std/io@0.224.0",
-      "jsr:@std/streams@^0.224.0": "jsr:@std/streams@0.224.0",
-      "npm:discord.js": "npm:discord.js@14.14.1"
+  "version": "4",
+  "specifiers": {
+    "jsr:@std/assert@*": "1.0.6",
+    "jsr:@std/assert@0.224": "0.224.0",
+    "jsr:@std/assert@^1.0.6": "1.0.6",
+    "jsr:@std/bytes@0.224": "0.224.0",
+    "jsr:@std/bytes@^1.0.2": "1.0.2",
+    "jsr:@std/cli@*": "0.224.0",
+    "jsr:@std/csv@*": "0.224.0",
+    "jsr:@std/csv@^1.0.3": "1.0.3",
+    "jsr:@std/dotenv@*": "0.225.2",
+    "jsr:@std/dotenv@0.225": "0.225.2",
+    "jsr:@std/fmt@0.224": "0.224.0",
+    "jsr:@std/internal@0.224": "0.224.0",
+    "jsr:@std/internal@^1.0.4": "1.0.4",
+    "jsr:@std/io@0.225": "0.225.0",
+    "jsr:@std/streams@0.224": "0.224.0",
+    "jsr:@std/streams@^1.0.4": "1.0.7",
+    "npm:discord.js@*": "14.14.1",
+    "npm:discord.js@^14.14.1": "14.14.1"
+  },
+  "jsr": {
+    "@std/assert@0.224.0": {
+      "integrity": "8643233ec7aec38a940a8264a6e3eed9bfa44e7a71cc6b3c8874213ff401967f",
+      "dependencies": [
+        "jsr:@std/fmt",
+        "jsr:@std/internal@0.224"
+      ]
     },
-    "jsr": {
-      "@std/assert@0.224.0": {
-        "integrity": "8643233ec7aec38a940a8264a6e3eed9bfa44e7a71cc6b3c8874213ff401967f"
-      },
-      "@std/bytes@0.224.0": {
-        "integrity": "a2250e1d0eb7d1c5a426f21267ab9bdeac2447fa87a3d0d1a467d3f7a6058e49"
-      },
-      "@std/cli@0.224.0": {
-        "integrity": "2612373d68984637bdad8b9c9dd160e9838ac2a6d463354d537d2897a7cc6d1c",
-        "dependencies": [
-          "jsr:@std/assert@^0.224.0"
-        ]
-      },
-      "@std/csv@0.224.0": {
-        "integrity": "6464f5a001a8a9f339d7d525596e43ef8a711a35ac6aebbf404f971526e222ac",
-        "dependencies": [
-          "jsr:@std/assert@^0.224.0",
-          "jsr:@std/streams@^0.224.0"
-        ]
-      },
-      "@std/dotenv@0.224.0": {
-        "integrity": "d9234cdf551507dcda60abb6c474289843741d8c07ee8ce540c60f5c1b220a1d"
-      },
-      "@std/io@0.224.0": {
-        "integrity": "0aff885d21d829c050b8a08b1d71b54aed5841aecf227f8d77e99ec529a11e8e",
-        "dependencies": [
-          "jsr:@std/assert@^0.224.0",
-          "jsr:@std/bytes@^0.224.0"
-        ]
-      },
-      "@std/streams@0.224.0": {
-        "integrity": "9c21feb45113abfc67dd536029624d1792d56dfbb029b8c1baf4ad5a2c35769e",
-        "dependencies": [
-          "jsr:@std/bytes@^0.224.0"
-        ]
-      }
+    "@std/assert@1.0.6": {
+      "integrity": "1904c05806a25d94fe791d6d883b685c9e2dcd60e4f9fc30f4fc5cf010c72207",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.4"
+      ]
     },
-    "npm": {
-      "@discordjs/builders@1.7.0": {
-        "integrity": "sha512-GDtbKMkg433cOZur8Dv6c25EHxduNIBsxeHrsRoIM8+AwmEZ8r0tEpckx/sHwTLwQPOF3e2JWloZh9ofCaMfAw==",
-        "dependencies": {
-          "@discordjs/formatters": "@discordjs/formatters@0.3.3",
-          "@discordjs/util": "@discordjs/util@1.0.2",
-          "@sapphire/shapeshift": "@sapphire/shapeshift@3.9.6",
-          "discord-api-types": "discord-api-types@0.37.61",
-          "fast-deep-equal": "fast-deep-equal@3.1.3",
-          "ts-mixer": "ts-mixer@6.0.3",
-          "tslib": "tslib@2.6.2"
-        }
-      },
-      "@discordjs/collection@1.5.3": {
-        "integrity": "sha512-SVb428OMd3WO1paV3rm6tSjM4wC+Kecaa1EUGX7vc6/fddvw/6lg90z4QtCqm21zvVe92vMMDt9+DkIvjXImQQ==",
-        "dependencies": {}
-      },
-      "@discordjs/collection@2.0.0": {
-        "integrity": "sha512-YTWIXLrf5FsrLMycpMM9Q6vnZoR/lN2AWX23/Cuo8uOOtS8eHB2dyQaaGnaF8aZPYnttf2bkLMcXn/j6JUOi3w==",
-        "dependencies": {}
-      },
-      "@discordjs/formatters@0.3.3": {
-        "integrity": "sha512-wTcI1Q5cps1eSGhl6+6AzzZkBBlVrBdc9IUhJbijRgVjCNIIIZPgqnUj3ntFODsHrdbGU8BEG9XmDQmgEEYn3w==",
-        "dependencies": {
-          "discord-api-types": "discord-api-types@0.37.61"
-        }
-      },
-      "@discordjs/rest@2.2.0": {
-        "integrity": "sha512-nXm9wT8oqrYFRMEqTXQx9DUTeEtXUDMmnUKIhZn6O2EeDY9VCdwj23XCPq7fkqMPKdF7ldAfeVKyxxFdbZl59A==",
-        "dependencies": {
-          "@discordjs/collection": "@discordjs/collection@2.0.0",
-          "@discordjs/util": "@discordjs/util@1.0.2",
-          "@sapphire/async-queue": "@sapphire/async-queue@1.5.2",
-          "@sapphire/snowflake": "@sapphire/snowflake@3.5.1",
-          "@vladfrangu/async_event_emitter": "@vladfrangu/async_event_emitter@2.2.4",
-          "discord-api-types": "discord-api-types@0.37.61",
-          "magic-bytes.js": "magic-bytes.js@1.8.0",
-          "tslib": "tslib@2.6.2",
-          "undici": "undici@5.27.2"
-        }
-      },
-      "@discordjs/util@1.0.2": {
-        "integrity": "sha512-IRNbimrmfb75GMNEjyznqM1tkI7HrZOf14njX7tCAAUetyZM1Pr8hX/EK2lxBCOgWDRmigbp24fD1hdMfQK5lw==",
-        "dependencies": {}
-      },
-      "@discordjs/ws@1.0.2": {
-        "integrity": "sha512-+XI82Rm2hKnFwAySXEep4A7Kfoowt6weO6381jgW+wVdTpMS/56qCvoXyFRY0slcv7c/U8My2PwIB2/wEaAh7Q==",
-        "dependencies": {
-          "@discordjs/collection": "@discordjs/collection@2.0.0",
-          "@discordjs/rest": "@discordjs/rest@2.2.0",
-          "@discordjs/util": "@discordjs/util@1.0.2",
-          "@sapphire/async-queue": "@sapphire/async-queue@1.5.2",
-          "@types/ws": "@types/ws@8.5.9",
-          "@vladfrangu/async_event_emitter": "@vladfrangu/async_event_emitter@2.2.4",
-          "discord-api-types": "discord-api-types@0.37.61",
-          "tslib": "tslib@2.6.2",
-          "ws": "ws@8.14.2"
-        }
-      },
-      "@fastify/busboy@2.1.0": {
-        "integrity": "sha512-+KpH+QxZU7O4675t3mnkQKcZZg56u+K/Ct2K+N2AZYNVK8kyeo/bI18tI8aPm3tvNNRyTWfj6s5tnGNlcbQRsA==",
-        "dependencies": {}
-      },
-      "@sapphire/async-queue@1.5.2": {
-        "integrity": "sha512-7X7FFAA4DngXUl95+hYbUF19bp1LGiffjJtu7ygrZrbdCSsdDDBaSjB7Akw0ZbOu6k0xpXyljnJ6/RZUvLfRdg==",
-        "dependencies": {}
-      },
-      "@sapphire/shapeshift@3.9.6": {
-        "integrity": "sha512-4+Na/fxu2SEepZRb9z0dbsVh59QtwPuBg/UVaDib3av7ZY14b14+z09z6QVn0P6Dv6eOU2NDTsjIi0mbtgP56g==",
-        "dependencies": {
-          "fast-deep-equal": "fast-deep-equal@3.1.3",
-          "lodash": "lodash@4.17.21"
-        }
-      },
-      "@sapphire/snowflake@3.5.1": {
-        "integrity": "sha512-BxcYGzgEsdlG0dKAyOm0ehLGm2CafIrfQTZGWgkfKYbj+pNNsorZ7EotuZukc2MT70E0UbppVbtpBrqpzVzjNA==",
-        "dependencies": {}
-      },
-      "@types/node@18.16.19": {
-        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
-        "dependencies": {}
-      },
-      "@types/ws@8.5.9": {
-        "integrity": "sha512-jbdrY0a8lxfdTp/+r7Z4CkycbOFN8WX+IOchLJr3juT/xzbJ8URyTVSJ/hvNdadTgM1mnedb47n+Y31GsFnQlg==",
-        "dependencies": {
-          "@types/node": "@types/node@18.16.19"
-        }
-      },
-      "@vladfrangu/async_event_emitter@2.2.4": {
-        "integrity": "sha512-ButUPz9E9cXMLgvAW8aLAKKJJsPu1dY1/l/E8xzLFuysowXygs6GBcyunK9rnGC4zTsnIc2mQo71rGw9U+Ykug==",
-        "dependencies": {}
-      },
-      "discord-api-types@0.37.61": {
-        "integrity": "sha512-o/dXNFfhBpYHpQFdT6FWzeO7pKc838QeeZ9d91CfVAtpr5XLK4B/zYxQbYgPdoMiTDvJfzcsLW5naXgmHGDNXw==",
-        "dependencies": {}
-      },
-      "discord.js@14.14.1": {
-        "integrity": "sha512-/hUVzkIerxKHyRKopJy5xejp4MYKDPTszAnpYxzVVv4qJYf+Tkt+jnT2N29PIPschicaEEpXwF2ARrTYHYwQ5w==",
-        "dependencies": {
-          "@discordjs/builders": "@discordjs/builders@1.7.0",
-          "@discordjs/collection": "@discordjs/collection@1.5.3",
-          "@discordjs/formatters": "@discordjs/formatters@0.3.3",
-          "@discordjs/rest": "@discordjs/rest@2.2.0",
-          "@discordjs/util": "@discordjs/util@1.0.2",
-          "@discordjs/ws": "@discordjs/ws@1.0.2",
-          "@sapphire/snowflake": "@sapphire/snowflake@3.5.1",
-          "@types/ws": "@types/ws@8.5.9",
-          "discord-api-types": "discord-api-types@0.37.61",
-          "fast-deep-equal": "fast-deep-equal@3.1.3",
-          "lodash.snakecase": "lodash.snakecase@4.1.1",
-          "tslib": "tslib@2.6.2",
-          "undici": "undici@5.27.2",
-          "ws": "ws@8.14.2"
-        }
-      },
-      "fast-deep-equal@3.1.3": {
-        "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==",
-        "dependencies": {}
-      },
-      "lodash.snakecase@4.1.1": {
-        "integrity": "sha512-QZ1d4xoBHYUeuouhEq3lk3Uq7ldgyFXGBhg04+oRLnIz8o9T65Eh+8YdroUwn846zchkA9yDsDl5CVVaV2nqYw==",
-        "dependencies": {}
-      },
-      "lodash@4.17.21": {
-        "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
-        "dependencies": {}
-      },
-      "magic-bytes.js@1.8.0": {
-        "integrity": "sha512-lyWpfvNGVb5lu8YUAbER0+UMBTdR63w2mcSUlhhBTyVbxJvjgqwyAf3AZD6MprgK0uHuBoWXSDAMWLupX83o3Q==",
-        "dependencies": {}
-      },
-      "ts-mixer@6.0.3": {
-        "integrity": "sha512-k43M7uCG1AkTyxgnmI5MPwKoUvS/bRvLvUb7+Pgpdlmok8AoqmUaZxUUw8zKM5B1lqZrt41GjYgnvAi0fppqgQ==",
-        "dependencies": {}
-      },
-      "tslib@2.6.2": {
-        "integrity": "sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==",
-        "dependencies": {}
-      },
-      "undici@5.27.2": {
-        "integrity": "sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==",
-        "dependencies": {
-          "@fastify/busboy": "@fastify/busboy@2.1.0"
-        }
-      },
-      "ws@8.14.2": {
-        "integrity": "sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==",
-        "dependencies": {}
-      }
+    "@std/bytes@0.224.0": {
+      "integrity": "a2250e1d0eb7d1c5a426f21267ab9bdeac2447fa87a3d0d1a467d3f7a6058e49"
+    },
+    "@std/bytes@1.0.2": {
+      "integrity": "fbdee322bbd8c599a6af186a1603b3355e59a5fb1baa139f8f4c3c9a1b3e3d57"
+    },
+    "@std/cli@0.224.0": {
+      "integrity": "2612373d68984637bdad8b9c9dd160e9838ac2a6d463354d537d2897a7cc6d1c",
+      "dependencies": [
+        "jsr:@std/assert@0.224"
+      ]
+    },
+    "@std/csv@0.224.0": {
+      "integrity": "6464f5a001a8a9f339d7d525596e43ef8a711a35ac6aebbf404f971526e222ac",
+      "dependencies": [
+        "jsr:@std/assert@0.224",
+        "jsr:@std/streams@0.224"
+      ]
+    },
+    "@std/csv@1.0.3": {
+      "integrity": "623acf0dcb88d62ba727c3611ad005df7f109ede8cac833e3986f540744562e5",
+      "dependencies": [
+        "jsr:@std/streams@^1.0.4"
+      ]
+    },
+    "@std/dotenv@0.225.2": {
+      "integrity": "e2025dce4de6c7bca21dece8baddd4262b09d5187217e231b033e088e0c4dd23"
+    },
+    "@std/fmt@0.224.0": {
+      "integrity": "e20e9a2312a8b5393272c26191c0a68eda8d2c4b08b046bad1673148f1d69851"
+    },
+    "@std/internal@0.224.0": {
+      "integrity": "afc50644f9cdf4495eeb80523a8f6d27226b4b36c45c7c195dfccad4b8509291",
+      "dependencies": [
+        "jsr:@std/fmt"
+      ]
+    },
+    "@std/internal@1.0.4": {
+      "integrity": "62e8e4911527e5e4f307741a795c0b0a9e6958d0b3790716ae71ce085f755422"
+    },
+    "@std/io@0.225.0": {
+      "integrity": "c1db7c5e5a231629b32d64b9a53139445b2ca640d828c26bf23e1c55f8c079b3",
+      "dependencies": [
+        "jsr:@std/bytes@^1.0.2"
+      ]
+    },
+    "@std/streams@0.224.0": {
+      "integrity": "9c21feb45113abfc67dd536029624d1792d56dfbb029b8c1baf4ad5a2c35769e",
+      "dependencies": [
+        "jsr:@std/bytes@0.224"
+      ]
+    },
+    "@std/streams@1.0.7": {
+      "integrity": "1a93917ca0c58c01b2bfb93647189229b1702677f169b6fb61ad6241cd2e499b",
+      "dependencies": [
+        "jsr:@std/bytes@^1.0.2"
+      ]
     }
   },
-  "remote": {},
+  "npm": {
+    "@discordjs/builders@1.7.0": {
+      "integrity": "sha512-GDtbKMkg433cOZur8Dv6c25EHxduNIBsxeHrsRoIM8+AwmEZ8r0tEpckx/sHwTLwQPOF3e2JWloZh9ofCaMfAw==",
+      "dependencies": [
+        "@discordjs/formatters",
+        "@discordjs/util",
+        "@sapphire/shapeshift",
+        "discord-api-types",
+        "fast-deep-equal",
+        "ts-mixer",
+        "tslib"
+      ]
+    },
+    "@discordjs/collection@1.5.3": {
+      "integrity": "sha512-SVb428OMd3WO1paV3rm6tSjM4wC+Kecaa1EUGX7vc6/fddvw/6lg90z4QtCqm21zvVe92vMMDt9+DkIvjXImQQ=="
+    },
+    "@discordjs/collection@2.0.0": {
+      "integrity": "sha512-YTWIXLrf5FsrLMycpMM9Q6vnZoR/lN2AWX23/Cuo8uOOtS8eHB2dyQaaGnaF8aZPYnttf2bkLMcXn/j6JUOi3w=="
+    },
+    "@discordjs/formatters@0.3.3": {
+      "integrity": "sha512-wTcI1Q5cps1eSGhl6+6AzzZkBBlVrBdc9IUhJbijRgVjCNIIIZPgqnUj3ntFODsHrdbGU8BEG9XmDQmgEEYn3w==",
+      "dependencies": [
+        "discord-api-types"
+      ]
+    },
+    "@discordjs/rest@2.2.0": {
+      "integrity": "sha512-nXm9wT8oqrYFRMEqTXQx9DUTeEtXUDMmnUKIhZn6O2EeDY9VCdwj23XCPq7fkqMPKdF7ldAfeVKyxxFdbZl59A==",
+      "dependencies": [
+        "@discordjs/collection@2.0.0",
+        "@discordjs/util",
+        "@sapphire/async-queue",
+        "@sapphire/snowflake",
+        "@vladfrangu/async_event_emitter",
+        "discord-api-types",
+        "magic-bytes.js",
+        "tslib",
+        "undici"
+      ]
+    },
+    "@discordjs/util@1.0.2": {
+      "integrity": "sha512-IRNbimrmfb75GMNEjyznqM1tkI7HrZOf14njX7tCAAUetyZM1Pr8hX/EK2lxBCOgWDRmigbp24fD1hdMfQK5lw=="
+    },
+    "@discordjs/ws@1.0.2": {
+      "integrity": "sha512-+XI82Rm2hKnFwAySXEep4A7Kfoowt6weO6381jgW+wVdTpMS/56qCvoXyFRY0slcv7c/U8My2PwIB2/wEaAh7Q==",
+      "dependencies": [
+        "@discordjs/collection@2.0.0",
+        "@discordjs/rest",
+        "@discordjs/util",
+        "@sapphire/async-queue",
+        "@types/ws",
+        "@vladfrangu/async_event_emitter",
+        "discord-api-types",
+        "tslib",
+        "ws"
+      ]
+    },
+    "@fastify/busboy@2.1.0": {
+      "integrity": "sha512-+KpH+QxZU7O4675t3mnkQKcZZg56u+K/Ct2K+N2AZYNVK8kyeo/bI18tI8aPm3tvNNRyTWfj6s5tnGNlcbQRsA=="
+    },
+    "@sapphire/async-queue@1.5.2": {
+      "integrity": "sha512-7X7FFAA4DngXUl95+hYbUF19bp1LGiffjJtu7ygrZrbdCSsdDDBaSjB7Akw0ZbOu6k0xpXyljnJ6/RZUvLfRdg=="
+    },
+    "@sapphire/shapeshift@3.9.6": {
+      "integrity": "sha512-4+Na/fxu2SEepZRb9z0dbsVh59QtwPuBg/UVaDib3av7ZY14b14+z09z6QVn0P6Dv6eOU2NDTsjIi0mbtgP56g==",
+      "dependencies": [
+        "fast-deep-equal",
+        "lodash"
+      ]
+    },
+    "@sapphire/snowflake@3.5.1": {
+      "integrity": "sha512-BxcYGzgEsdlG0dKAyOm0ehLGm2CafIrfQTZGWgkfKYbj+pNNsorZ7EotuZukc2MT70E0UbppVbtpBrqpzVzjNA=="
+    },
+    "@types/node@18.16.19": {
+      "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA=="
+    },
+    "@types/ws@8.5.9": {
+      "integrity": "sha512-jbdrY0a8lxfdTp/+r7Z4CkycbOFN8WX+IOchLJr3juT/xzbJ8URyTVSJ/hvNdadTgM1mnedb47n+Y31GsFnQlg==",
+      "dependencies": [
+        "@types/node"
+      ]
+    },
+    "@vladfrangu/async_event_emitter@2.2.4": {
+      "integrity": "sha512-ButUPz9E9cXMLgvAW8aLAKKJJsPu1dY1/l/E8xzLFuysowXygs6GBcyunK9rnGC4zTsnIc2mQo71rGw9U+Ykug=="
+    },
+    "discord-api-types@0.37.61": {
+      "integrity": "sha512-o/dXNFfhBpYHpQFdT6FWzeO7pKc838QeeZ9d91CfVAtpr5XLK4B/zYxQbYgPdoMiTDvJfzcsLW5naXgmHGDNXw=="
+    },
+    "discord.js@14.14.1": {
+      "integrity": "sha512-/hUVzkIerxKHyRKopJy5xejp4MYKDPTszAnpYxzVVv4qJYf+Tkt+jnT2N29PIPschicaEEpXwF2ARrTYHYwQ5w==",
+      "dependencies": [
+        "@discordjs/builders",
+        "@discordjs/collection@1.5.3",
+        "@discordjs/formatters",
+        "@discordjs/rest",
+        "@discordjs/util",
+        "@discordjs/ws",
+        "@sapphire/snowflake",
+        "@types/ws",
+        "discord-api-types",
+        "fast-deep-equal",
+        "lodash.snakecase",
+        "tslib",
+        "undici",
+        "ws"
+      ]
+    },
+    "fast-deep-equal@3.1.3": {
+      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="
+    },
+    "lodash.snakecase@4.1.1": {
+      "integrity": "sha512-QZ1d4xoBHYUeuouhEq3lk3Uq7ldgyFXGBhg04+oRLnIz8o9T65Eh+8YdroUwn846zchkA9yDsDl5CVVaV2nqYw=="
+    },
+    "lodash@4.17.21": {
+      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
+    },
+    "magic-bytes.js@1.8.0": {
+      "integrity": "sha512-lyWpfvNGVb5lu8YUAbER0+UMBTdR63w2mcSUlhhBTyVbxJvjgqwyAf3AZD6MprgK0uHuBoWXSDAMWLupX83o3Q=="
+    },
+    "ts-mixer@6.0.3": {
+      "integrity": "sha512-k43M7uCG1AkTyxgnmI5MPwKoUvS/bRvLvUb7+Pgpdlmok8AoqmUaZxUUw8zKM5B1lqZrt41GjYgnvAi0fppqgQ=="
+    },
+    "tslib@2.6.2": {
+      "integrity": "sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q=="
+    },
+    "undici@5.27.2": {
+      "integrity": "sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==",
+      "dependencies": [
+        "@fastify/busboy"
+      ]
+    },
+    "ws@8.14.2": {
+      "integrity": "sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g=="
+    }
+  },
   "workspace": {
     "dependencies": [
-      "jsr:@std/assert@^0.224.0",
-      "jsr:@std/csv@^0.223.0",
-      "jsr:@std/dotenv@^0.224.0",
-      "jsr:@std/io@^0.224.0",
+      "jsr:@std/assert@^1.0.6",
+      "jsr:@std/csv@^1.0.3",
+      "jsr:@std/dotenv@0.225",
+      "jsr:@std/io@0.225",
       "npm:discord.js@^14.14.1"
     ]
   }
