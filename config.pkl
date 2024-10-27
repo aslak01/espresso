@@ -6,8 +6,8 @@ params {
   category = ""
   sub_category = "1.93.3216"
   radius = "30000"
-  lat = "59.83"
-  lon = "10.43"
+  lat = "59.85"
+  lon = "10.45"
 }
 
 blacklist {
