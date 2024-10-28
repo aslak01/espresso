@@ -16,7 +16,7 @@ export async function writeToCsv(
 
   const headers = fileSize < 10;
 
-  const csvData = stringify(data, { headers, columns });
+  const csvData = stringify(data, { headers, columns }) + "\n";
 
   const readable = ReadableStream.from(csvData);
   await readable.pipeThrough(new TextEncoderStream()).pipeTo(file.writable);
