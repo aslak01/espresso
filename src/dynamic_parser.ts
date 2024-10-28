@@ -1,4 +1,4 @@
-const configJson = await import("../config.json", { with: { "type": "json" } });
+const configJson = await import("../config.json", { with: { type: "json" } });
 const keepList = configJson.default.keep;
 
 function parseObjectWithKeys(
@@ -34,16 +34,18 @@ function parseObjectWithKeys(
 
         if (firstKey === "timestamp") {
           const timestampValue = value as number;
-          parsedObject["timestamp"] = timestampValue;
-          parsedObject["date"] = new Date(timestampValue)
-            .toLocaleDateString("no-NO", {
+          parsedObject.timestamp = timestampValue;
+          parsedObject.date = new Date(timestampValue).toLocaleDateString(
+            "no-NO",
+            {
               day: "2-digit",
               month: "2-digit",
               year: "2-digit",
-            });
+            },
+          );
           return undefined;
         } else if (firstKey === "url") {
-          parsedObject["image"] = value;
+          parsedObject.image = value;
           return undefined;
         }
 

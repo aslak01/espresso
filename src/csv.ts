@@ -16,7 +16,7 @@ export async function writeToCsv(
 
   const headers = fileSize < 10;
 
-  const csvData = stringify(data, { headers, columns }) + "\n";
+  const csvData = stringify(data, { headers, columns });
 
   const readable = ReadableStream.from(csvData);
   await readable.pipeThrough(new TextEncoderStream()).pipeTo(file.writable);
@@ -45,7 +45,18 @@ export async function readCsv(
     csvData.push(chunk);
   }
 
-  const csvText = new TextDecoder().decode(...csvData).trim();
+  const totalLength = csvData.reduce((acc, chunk) => acc + chunk.length, 0);
+  // Create a single Uint8Array of the exact size needed
+  const combinedChunks = new Uint8Array(totalLength);
+  //
+  // Copy each chunk into the correct position
+  let offset = 0;
+  for (const chunk of csvData) {
+    combinedChunks.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const csvText = new TextDecoder().decode(combinedChunks).trim();
 
   if (!csvText && !csvText.length) {
     return [];
