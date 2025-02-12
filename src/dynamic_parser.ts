@@ -1,81 +1,77 @@
 const configJson = await import("../config.json", { with: { type: "json" } });
 const keepList = configJson.default.keep;
 
-function parseObjectWithKeys(
-  keysToKeep: string[],
-): (
-  ad: Record<string, string | number | object>,
-) => Record<string, string | number> {
-  return function (
-    ad: Record<string, string | number | object>,
-  ): Record<string, string | number> {
-    if (!ad || typeof ad !== "object" || !Array.isArray(keysToKeep)) {
-      return {};
-    }
+type RawAd = Record<string, string | number | object>;
+type ParsedAd = Record<string, string | number>;
 
-    const parsedObject: Record<string, string | number> = {};
+function parseObjectWithKeys(keysToKeep: string[]): (ad: RawAd) => ParsedAd {
+	return function (ad: RawAd): ParsedAd {
+		if (!ad || typeof ad !== "object" || !Array.isArray(keysToKeep)) {
+			return {};
+		}
 
-    function getValueForKey(
-      key: string,
-      obj: Record<string, string | number | object>,
-    ): string | number | undefined {
-      const nestedKeys = key.split(".");
-      const firstKey = nestedKeys[0];
-      const remainingKeys = nestedKeys.slice(1);
+		const parsedObject: ParsedAd = {};
 
-      if (!Object.prototype.hasOwnProperty.call(obj, firstKey)) {
-        return undefined;
-      }
+		function getValueForKey(
+			key: string,
+			obj: RawAd,
+		): string | number | undefined {
+			const nestedKeys = key.split(".");
+			const [firstKey, ...remainingKeys] = nestedKeys;
 
-      const value = obj[firstKey];
+			if (!Object.prototype.hasOwnProperty.call(obj, firstKey)) {
+				return undefined;
+			}
 
-      if (remainingKeys.length === 0) {
-        if (typeof value === "object") return undefined;
+			const value = obj[firstKey];
 
-        if (firstKey === "timestamp") {
-          const timestampValue = value as number;
-          parsedObject.timestamp = timestampValue;
-          parsedObject.date = new Date(timestampValue).toLocaleDateString(
-            "no-NO",
-            {
-              day: "2-digit",
-              month: "2-digit",
-              year: "2-digit",
-            },
-          );
-          return undefined;
-        } else if (firstKey === "url") {
-          parsedObject.image = value;
-          return undefined;
-        }
+			if (remainingKeys.length === 0) {
+				if (typeof value === "object") return undefined;
 
-        return typeof value === "string"
-          ? (value as string).replaceAll(",", "")
-          : value;
-      } else if (typeof value === "object") {
-        return getValueForKey(
-          remainingKeys.join("."),
-          value as Record<string, string | number>,
-        );
-      } else {
-        return undefined;
-      }
-    }
+				if (firstKey === "timestamp") {
+					const timestampValue = value as number;
+					parsedObject.timestamp = timestampValue;
+					parsedObject.date = formatTimestampToDate(timestampValue);
+					return undefined;
+				} else if (firstKey === "url") {
+					parsedObject.image = value;
+					return undefined;
+				}
 
-    keysToKeep.forEach((key) => {
-      const value = getValueForKey(key, ad);
-      if (value !== undefined) {
-        parsedObject[key.split(".").pop()!] = value;
-      }
-    });
+				return typeof value === "string"
+					? (value as string).replaceAll(",", "")
+					: value;
+			} else if (typeof value === "object") {
+				return getValueForKey(
+					remainingKeys.join("."),
+					value as Record<string, string | number>,
+				);
+			} else {
+				return undefined;
+			}
+		}
 
-    return parsedObject;
-  };
+		keysToKeep.forEach((key) => {
+			const value = getValueForKey(key, ad);
+			if (value !== undefined) {
+				parsedObject[key.split(".").pop()!] = value;
+			}
+		});
+
+		return parsedObject;
+	};
 }
 
-export function parseAd(
-  ad: Record<string, string | number | object>,
-): Record<string, string | number> {
-  console.log("parsing", ad.heading);
-  return parseObjectWithKeys(keepList)(ad);
+export function parseAd(ad: RawAd): ParsedAd {
+	console.log("parsing", ad.heading);
+	const parser = parseObjectWithKeys(keepList);
+	return parser(ad);
+}
+
+function formatTimestampToDate(timestamp) {
+	return new Date(timestamp).toLocaleDateString("no-NO", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "2-digit",
+	});
 }

@@ -5,6 +5,9 @@ params {
   section = "torget"
   category = ""
   sub_category = "1.93.3216"
+  trade_type = "Til salgs"
+  search_key = "SEARCH_ID_BAP_ALL"
+  ad_type = 67
   radius = "30000"
   lat = "59.85"
   lon = "10.45"

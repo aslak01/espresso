@@ -1,16 +1,16 @@
 export function assembleQuery(
-  searchkey: string,
-  params: Record<string, string>,
+	searchkey: string,
+	params: Record<string, string>,
 ) {
-  const query = new URLSearchParams();
-  query.append("searchkey", searchkey);
-  query.append("vertical", "bap");
+	const query = new URLSearchParams();
+	query.append("searchkey", searchkey);
+	query.append("vertical", "bap");
 
-  Object.entries(params).forEach(([param, value]: [string, string]) => {
-    if (value !== "") {
-      query.append(param, value);
-    }
-  });
+	Object.entries(params).forEach(([param, value]: [string, string]) => {
+		if (value !== "") {
+			query.append(param, value);
+		}
+	});
 
-  return query.toString();
+	return query.toString();
 }
