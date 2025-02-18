@@ -7,7 +7,7 @@ export function assembleQuery(
 	query.append("vertical", "bap");
 
 	Object.entries(params).forEach(([param, value]: [string, string]) => {
-		if (value !== "") {
+		if (value !== "" && value !== "section") {
 			query.append(param, value);
 		}
 	});

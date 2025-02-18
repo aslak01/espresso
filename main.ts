@@ -15,11 +15,6 @@ import { readCsv, writeToCsv } from "./src/csv.ts";
 import { assembleQuery } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
 
-// Learn more at https://deno.land/manual/examples/module_metadata#concepts
-if (import.meta.main) {
-	await main();
-}
-
 async function main() {
 	const start = performance.now();
 
@@ -41,6 +36,7 @@ async function main() {
 	const d = args.values.d;
 
 	const inputUrl = url + assembleQuery(search_key(sec), params);
+	console.log(inputUrl);
 
 	d && console.log("Scraping ", inputUrl);
 
@@ -116,3 +112,5 @@ function end(start: number, processedAds = 0) {
 
 	return 0;
 }
+
+main();
