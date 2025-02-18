@@ -40,7 +40,7 @@ export function removeUnwantedAds(
 	blacklist: string[],
 	tradeType: string,
 	searchKey: string,
-	adType: number,
+	adType: string,
 ): (ad: FinnAd) => boolean {
 	return (ad: FinnAd): boolean => {
 		// exit early if ad was already parsed at some other point
@@ -57,7 +57,7 @@ export function removeUnwantedAds(
 			noneIncluded(blacklist, descriptionWords) &&
 			ad.trade_type === tradeType &&
 			ad.main_search_key === searchKey &&
-			ad.ad_type === adType;
+			ad.ad_type === Number(adType);
 		return verdict;
 	};
 }

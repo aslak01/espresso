@@ -16,7 +16,6 @@ import { assembleQuery } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
-// TODO: Learn that
 if (import.meta.main) {
 	await main();
 }
