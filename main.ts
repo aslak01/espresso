@@ -54,6 +54,9 @@ async function main() {
 	const seenIds = seenAds.map((ad) => Number(ad.ad_id));
 
 	const fetchData = await fetch(inputUrl);
+
+	assert(fetchData.ok, `fetch failed, ${fetchData.statusText}`);
+
 	const fetchJson = await fetchData.json();
 	const ads = fetchJson.docs;
 
