@@ -68,7 +68,7 @@ export function parseAd(ad: RawAd): ParsedAd {
 	return parser(ad);
 }
 
-function formatTimestampToDate(timestamp) {
+function formatTimestampToDate(timestamp: string | number) {
 	return new Date(timestamp).toLocaleDateString("no-NO", {
 		day: "2-digit",
 		month: "2-digit",

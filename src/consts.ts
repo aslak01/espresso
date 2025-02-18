@@ -1,10 +1,7 @@
-import { load } from "jsr:@std/dotenv";
 const configJson = await import("../config.json", { with: { type: "json" } });
-const env = await load();
 
 export const baseUrl = "https://www.finn.no/api/search-qf?";
-// Two env variable parsing formats because github actions has no .env file
-export const hookUrl = Deno.env.get("WEBHOOK_URL") || env["WEBHOOK_URL"];
+export const hookUrl = process.env.WEBHOOK_URL;
 
 const config = configJson.default;
 

@@ -1,72 +1,79 @@
-import { stringify } from "@std/csv/stringify";
-import { parse } from "@std/csv/parse";
+import { parse, stringify } from "csv";
+import { writeFile, stat, readFile } from "node:fs/promises";
 
 export async function writeToCsv(
 	data: Record<string, string | number>[],
 	filePath: string,
-) {
+): Promise<number> {
+	if (!data.length) throw new Error("Data array cannot be empty");
+
 	const columns = Object.keys(data[0]);
+	let headers = false;
 
-	const file = await Deno.open(filePath, {
-		append: true,
-	});
+	try {
+		const fileInfo = await stat(filePath);
+		// write headers if file is tiny
+		headers = fileInfo.size < 10;
+	} catch {
+		// File doesn't exist, write headers
+		headers = true;
+	}
 
-	const fileInfo = await file.stat();
-	const fileSize = fileInfo.size;
+	try {
+		const csvData: string = await new Promise((resolve, reject) => {
+			stringify(data, { header: headers, columns }, (err, output) => {
+				if (err) reject(err);
+				else resolve(output);
+			});
+		});
 
-	const headers = fileSize < 10;
-
-	const csvData = stringify(data, { headers, columns });
-
-	const readable = ReadableStream.from(csvData);
-	await readable.pipeThrough(new TextEncoderStream()).pipeTo(file.writable);
-
-	return 0;
+		await writeFile(filePath, csvData, { flag: "a" });
+		return 0;
+	} catch (error) {
+		console.error("Error writing to CSV:", error);
+		throw error;
+	}
 }
 
 export async function readCsv(
 	filePath: string,
 ): Promise<Record<string, string | undefined>[]> {
-	const csvFile = await Deno.open(filePath, {
-		read: true,
-		write: true,
-		create: true,
-	});
+	try {
+		const stats = await stat(filePath);
+		if (!stats.isFile()) {
+			return [];
+		}
 
-	const { isFile } = await csvFile.stat();
+		const csvText = await readFile(filePath, "utf-8");
 
-	if (isFile !== true) {
-		return [];
+		if (!csvText || csvText.trim().length === 0) {
+			return [];
+		}
+
+		const parsedData = await new Promise<Record<string, string>[]>(
+			(resolve, reject) => {
+				parse(
+					csvText,
+					{
+						columns: true,
+						skip_empty_lines: true,
+						// Handle rows with inconsistent column counts
+						relax_column_count: true,
+					},
+					(err, data) => {
+						if (err) {
+							reject(err);
+						} else {
+							resolve(data);
+						}
+					},
+				);
+			},
+		);
+
+		return parsedData;
+	} catch (error) {
+		console.error("error reading or parsing csv file", error);
+		throw error;
 	}
-
-	const csvData = [];
-
-	for await (const chunk of csvFile.readable) {
-		csvData.push(chunk);
-	}
-
-	const totalLength = csvData.reduce((acc, chunk) => acc + chunk.length, 0);
-	// Create a single Uint8Array of the exact size needed
-	const combinedChunks = new Uint8Array(totalLength);
-	//
-	// Copy each chunk into the correct position
-	let offset = 0;
-	for (const chunk of csvData) {
-		combinedChunks.set(chunk, offset);
-		offset += chunk.length;
-	}
-
-	const csvText = new TextDecoder().decode(combinedChunks).trim();
-
-	if (!csvText && !csvText.length) {
-		return [];
-	}
-
-	console.log(csvText);
-
-	const data = parse(csvText, {
-		skipFirstRow: true,
-	});
-
-	return data;
 }

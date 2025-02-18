@@ -11,16 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     environment: scrape
     steps:
-      - name: Setup deno
-        uses: denoland/setup-deno@main
-        with:
-          deno-version: v2.0.x
       - name: Check out repo
         uses: actions/checkout@v4
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+      - name: Bun install
+        run: bun install
       - name: Run script
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-        run: deno task scrape
+        run: bun run main.ts
       - name: commit it
         uses: EndBug/add-and-commit@v9
         with:

@@ -1,0 +1,16 @@
+{
+  "name": "espresso",
+  "module": "main.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "csv": "^6.3.11",
+    "csv-parse": "^5.6.0",
+    "effect": "^3.13.2"
+  }
+}

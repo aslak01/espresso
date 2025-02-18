@@ -1,5 +1,5 @@
-import { assert } from "jsr:@std/assert/assert";
-import { parseArgs } from "jsr:@std/cli/parse-args";
+import assert from "node:assert";
+import { parseArgs } from "node:util";
 import { formatDiscordMsg } from "./src/format.ts";
 import { isFinnAd, removeUnwantedAds } from "./src/validation.ts";
 import {
@@ -23,20 +23,28 @@ if (import.meta.main) {
 async function main() {
 	const start = performance.now();
 
-	const args = parseArgs(Deno.args);
+	const args = parseArgs({
+		args: Bun.argv.slice(2),
+		options: {
+			i: { type: "string" }, // Input URL
+			m: { type: "string" }, // Section
+			d: { type: "boolean" }, // Debug flag
+			o: { type: "string" }, // Output URL
+		},
+	});
 
-	const url = args.i || baseUrl;
+	const url = args.values.i || baseUrl;
 	assert(url, "url needs to be defined.");
 
-	const sec = args.m || section;
+	const sec = args.values.m || section;
 
-	const d = args.d;
+	const d = args.values.d;
 
 	const inputUrl = url + assembleQuery(search_key(sec), params);
 
 	d && console.log("Scraping ", inputUrl);
 
-	const outputUrl = args.o || hookUrl;
+	const outputUrl = args.values.o || hookUrl;
 
 	d && outputUrl && console.log("Publishing to ", outputUrl);
 
