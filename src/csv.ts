@@ -1,5 +1,5 @@
 import { parse, stringify } from "csv";
-import { writeFile, stat, readFile } from "node:fs/promises";
+import { appendFile, stat, readFile } from "node:fs/promises";
 
 export async function writeToCsv(
 	data: Record<string, string | number>[],
@@ -27,7 +27,7 @@ export async function writeToCsv(
 			});
 		});
 
-		await writeFile(filePath, csvData, { flag: "a" });
+		await appendFile(filePath, csvData);
 		return 0;
 	} catch (error) {
 		console.error("Error writing to CSV:", error);
@@ -57,7 +57,7 @@ export async function readCsv(
 					{
 						columns: true,
 						skip_empty_lines: true,
-						// Handle rows with inconsistent column counts
+						// allow rows with inconsistent column counts
 						relax_column_count: true,
 					},
 					(err, data) => {
@@ -73,7 +73,7 @@ export async function readCsv(
 
 		return parsedData;
 	} catch (error) {
-		console.error("error reading or parsing csv file", error);
+		console.error("Error reading or parsing csv file:", error);
 		throw error;
 	}
 }
