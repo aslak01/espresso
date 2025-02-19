@@ -7,7 +7,7 @@ export function assembleQuery(
 	query.append("vertical", "bap");
 
 	Object.entries(params).forEach(([param, value]: [string, string]) => {
-		if (value !== "" && param !== "trade_type") {
+		if (value !== "" && param !== "trade_type" && param !== "ad_type") {
 			query.append(param, value);
 		}
 	});

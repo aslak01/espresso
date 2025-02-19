@@ -14,6 +14,7 @@ import { createRateLimitedQueue } from "./src/webhook.ts";
 import { readCsv, writeToCsv } from "./src/csv.ts";
 import { assembleQuery } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
+import type { FinnAd } from "./src/types/quicktype.ts";
 
 async function main() {
 	const start = performance.now();
@@ -56,13 +57,19 @@ async function main() {
 	const fetchJson = await fetchData.json();
 	const ads = fetchJson.docs;
 
-	assert(ads.length > 0, "No ads found.");
+	assert(ads && ads.length > 0, "No ads found.");
 
 	const wellFormedAds = ads.filter(isFinnAd);
 	console.log("found", wellFormedAds.length, "ads");
 
 	// SEARCH_ID_BAP_ALL filters away "gis bort"
 	// 67 filters for private
+	// console.log("seen", seenIds);
+	// console.log(
+	// 	"found",
+	// 	wellFormedAds.map((ad: FinnAd) => ad.id),
+	// );
+
 	const wantedAd = removeUnwantedAds(
 		seenIds,
 		blacklist,
