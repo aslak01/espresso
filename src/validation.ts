@@ -44,7 +44,7 @@ export function removeUnwantedAds(
 ): (ad: FinnAd) => boolean {
 	return (ad: FinnAd): boolean => {
 		// exit early if ad was already parsed at some other point
-		if (seenList.includes(ad.ad_id)) return false;
+		if (seenList.includes(Number(ad.ad_id))) return false;
 
 		const description = stripPunctuation(ad.heading).replace("-", " ");
 

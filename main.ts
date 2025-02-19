@@ -79,7 +79,9 @@ async function main() {
 	);
 
 	const validatedNewAds = wellFormedAds.filter(wantedAd);
+
 	if (validatedNewAds.length === 0) return end(start);
+
 	console.log("found", validatedNewAds, "interesting ads");
 
 	const parsedAds = validatedNewAds.map(parseAd);
