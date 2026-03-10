@@ -1,24 +1,29 @@
-import assert from "node:assert";
 import { parseArgs } from "node:util";
 import { formatDiscordMsg } from "./src/format.ts";
-import { isFinnAd, removeUnwantedAds } from "./src/validation.ts";
+import { parseFinnAd, removeUnwantedAds } from "./src/validation.ts";
 import {
 	baseUrl,
 	blacklist,
 	hookUrl,
 	params,
 	search_key,
+	validSections,
 	section,
+	type Section,
 } from "./src/consts.ts";
 import { createRateLimitedQueue } from "./src/webhook.ts";
-import { readCsv, writeToCsv } from "./src/csv.ts";
+import { readSeenIds, writeToCsv } from "./src/csv.ts";
 import { assembleQuery } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
-import type { FinnAd } from "./src/types/quicktype.ts";
 
-async function main() {
-	const start = performance.now();
+type CliArgs = {
+	inputUrl: string;
+	section: Section;
+	debug: boolean;
+	webhookUrl: string | undefined;
+};
 
+function parseCliArgs(): CliArgs {
 	const args = parseArgs({
 		args: Bun.argv.slice(2),
 		options: {
@@ -29,47 +34,65 @@ async function main() {
 		},
 	});
 
-	const url = args.values.i || baseUrl;
-	assert(url, "url needs to be defined.");
+	const inputUrl = args.values.i || baseUrl;
+	if (!inputUrl) throw new Error("url needs to be defined.");
 
 	const sec = args.values.m || section;
+	if (!validSections.includes(sec as Section)) {
+		throw new Error(
+			`Invalid section "${sec}". Must be one of: ${validSections.join(", ")}`,
+		);
+	}
 
-	const d = args.values.d;
+	return {
+		inputUrl,
+		section: sec as Section,
+		debug: args.values.d ?? false,
+		webhookUrl: args.values.o || hookUrl,
+	};
+}
 
-	const inputUrl = url + assembleQuery(search_key(sec), params);
-	console.log(inputUrl);
+async function main() {
+	const start = performance.now();
 
-	d && console.log("Scraping ", inputUrl);
+	const cli = parseCliArgs();
 
-	const outputUrl = args.values.o || hookUrl;
+	const queryUrl =
+		cli.inputUrl + assembleQuery(search_key(cli.section), params);
+	console.log(queryUrl);
 
-	d && outputUrl && console.log("Publishing to ", outputUrl);
+	cli.debug && console.log("Scraping ", queryUrl);
+	cli.debug && cli.webhookUrl && console.log("Publishing to ", cli.webhookUrl);
 
-	const escapedQuery = params.q.replace(" ", "_");
+	const escapedQuery = params.q.replace(/[^a-zA-Z0-9_-]/g, "_");
+	const csvPath = `./data/${escapedQuery}.csv`;
 
-	const seenAds = await readCsv(`./data/${escapedQuery}.csv`);
-	const seenIds = seenAds.map((ad) => Number(ad.ad_id));
+	// --- Boundary: CSV file ---
+	let seenIds = new Set<number>();
+	try {
+		seenIds = await readSeenIds(csvPath);
+	} catch (err) {
+		console.warn("Failed to read CSV, starting fresh:", err);
+	}
 
-	const fetchData = await fetch(inputUrl);
-
-	assert(fetchData.ok, `fetch failed, ${fetchData.statusText}`);
-
+	// --- Boundary: finn.no API ---
+	const fetchData = await fetchWithRetry(queryUrl);
 	const fetchJson = await fetchData.json();
-	const ads = fetchJson.docs;
+	const rawDocs: unknown[] = fetchJson.docs ?? [];
 
-	assert(ads && ads.length > 0, "No ads found.");
+	// Parse at boundary: unknown[] → FinnAd[]
+	const ads = rawDocs
+		.map(parseFinnAd)
+		.filter((ad) => ad !== null);
 
-	const wellFormedAds = ads.filter(isFinnAd);
-	console.log("found", wellFormedAds.length, "ads");
+	if (ads.length === 0) {
+		console.log("No ads found.");
+		return end(start);
+	}
 
-	// SEARCH_ID_BAP_ALL filters away "gis bort"
-	// 67 filters for private
-	// console.log("seen", seenIds);
-	// console.log(
-	// 	"found",
-	// 	wellFormedAds.map((ad: FinnAd) => ad.id),
-	// );
+	console.log("found", ads.length, "ads");
 
+	// --- Core: typed data flows through, no more runtime checks ---
 	const wantedAd = removeUnwantedAds(
 		seenIds,
 		blacklist,
@@ -78,25 +101,25 @@ async function main() {
 		params.ad_type,
 	);
 
-	const validatedNewAds = wellFormedAds.filter(wantedAd);
+	const newAds = ads.filter(wantedAd);
 
-	if (validatedNewAds.length === 0) return end(start);
+	if (newAds.length === 0) return end(start);
 
-	console.log("found", validatedNewAds, "interesting ads");
+	console.log("found", newAds.length, "interesting ads");
 
-	const parsedAds = validatedNewAds.map(parseAd);
+	// FinnAd[] → Ad[] (typed mapping, no runtime checks)
+	const parsedAds = newAds.map(parseAd);
 
-	const writeCsv = writeToCsv(parsedAds, `./data/${escapedQuery}.csv`);
+	// --- Boundary: CSV write + webhook ---
+	const writeCsv = writeToCsv(parsedAds, csvPath);
 
-	if (outputUrl) {
+	if (cli.webhookUrl) {
 		const messages = parsedAds.map(formatDiscordMsg);
-		const queue = createRateLimitedQueue(outputUrl);
+		const queue = createRateLimitedQueue(cli.webhookUrl);
 		const sendWebhooks = queue.enqueueBatch(messages);
 
 		await Promise.all([sendWebhooks, writeCsv])
-			.then(() => {
-				return end(start, parsedAds.length);
-			})
+			.then(() => end(start, parsedAds.length))
 			.catch((err) => {
 				throw new Error(err);
 			});
@@ -104,14 +127,37 @@ async function main() {
 	}
 
 	await Promise.all([writeCsv])
-		.then(() => {
-			return end(start, parsedAds.length);
-		})
+		.then(() => end(start, parsedAds.length))
 		.catch((err) => {
 			throw new Error(err);
 		});
 
 	return 1;
+}
+
+async function fetchWithRetry(
+	url: string,
+	maxRetries = 3,
+	baseDelay = 1000,
+): Promise<Response> {
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		const response = await fetch(url);
+		if (response.ok) return response;
+
+		if (attempt === maxRetries) {
+			throw new Error(
+				`Fetch failed after ${maxRetries + 1} attempts: ${response.status} ${response.statusText}`,
+			);
+		}
+
+		const delay = baseDelay * 2 ** attempt;
+		console.warn(
+			`Fetch attempt ${attempt + 1} failed (${response.status}), retrying in ${delay}ms...`,
+		);
+		await new Promise((resolve) => setTimeout(resolve, delay));
+	}
+
+	throw new Error("Unreachable");
 }
 
 function end(start: number, processedAds = 0) {

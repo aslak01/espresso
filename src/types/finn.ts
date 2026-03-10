@@ -1,15 +1,16 @@
-import type { FinnAd } from "./quicktype.ts";
-
-type FilteredFinnAd = Pick<FinnAd, "heading" | "location" | "timestamp">;
-
-type MassagedFinnAd = {
+export type Ad = {
 	ad_id: number;
-	amount: number;
+	heading: string;
+	location: string;
+	timestamp: number;
 	date: string;
+	amount: number;
 	lat: number;
 	lon: number;
 	canonical_url: string;
 	image: string;
 };
 
-export type FilteredAndMassagedFinnAd = FilteredFinnAd & MassagedFinnAd;
+export type DiscordMessage = {
+	content: string;
+};
