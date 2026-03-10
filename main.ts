@@ -60,11 +60,7 @@ async function main() {
 	}
 	const seenIds = new Set(seenAds.map((ad) => Number(ad.ad_id)));
 
-	const fetchData = await fetch(inputUrl);
-
-	if (!fetchData.ok) {
-		throw new Error(`Fetch failed: ${fetchData.status} ${fetchData.statusText}`);
-	}
+	const fetchData = await fetchWithRetry(inputUrl);
 
 	const fetchJson = await fetchData.json();
 	const ads = fetchJson.docs;
@@ -119,6 +115,31 @@ async function main() {
 		});
 
 	return 1;
+}
+
+async function fetchWithRetry(
+	url: string,
+	maxRetries = 3,
+	baseDelay = 1000,
+): Promise<Response> {
+	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		const response = await fetch(url);
+		if (response.ok) return response;
+
+		if (attempt === maxRetries) {
+			throw new Error(
+				`Fetch failed after ${maxRetries + 1} attempts: ${response.status} ${response.statusText}`,
+			);
+		}
+
+		const delay = baseDelay * 2 ** attempt;
+		console.warn(
+			`Fetch attempt ${attempt + 1} failed (${response.status}), retrying in ${delay}ms...`,
+		);
+		await new Promise((resolve) => setTimeout(resolve, delay));
+	}
+
+	throw new Error("Unreachable");
 }
 
 function end(start: number, processedAds = 0) {
