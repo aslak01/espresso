@@ -65,11 +65,14 @@ export function createRateLimitedQueue(url: string) {
 	const enqueueBatch = (items: unknown[]): Promise<void> => {
 		for (const item of items) {
 			const task = async () => {
-				const response = await fetch(`${url}`, {
+				const response = await fetch(url, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify(item),
 				});
+				if (!response.ok) {
+					console.error(`Webhook POST failed: ${response.status} ${response.statusText}`);
+				}
 				updateRateLimitInfo(response.headers);
 			};
 			queue.push(task);

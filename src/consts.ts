@@ -15,8 +15,11 @@ const searchkey_postfix = {
 	jobb: "JOB_FULLTIME",
 	eiendom: "REALESTATE_HOMES",
 	bil: "CAR_USED",
-};
+} as const;
 
-export function search_key(market: keyof typeof searchkey_postfix): string {
+export const validSections = Object.keys(searchkey_postfix) as Section[];
+export type Section = keyof typeof searchkey_postfix;
+
+export function search_key(market: Section): string {
 	return searchkey_prefix + searchkey_postfix[market];
 }

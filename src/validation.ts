@@ -21,22 +21,20 @@ export function isFinnAd<T extends FinnAd>(obj: unknown): obj is T {
 	);
 }
 
-function noneIncluded(arr1: string[], arr2: string[]): boolean {
-	return arr1.every(
-		(str1) => !arr2.some((str2) => str2.includes(str1)) && !arr2.includes(str1),
-	);
+export function noneIncluded(blacklist: string[], words: string[]): boolean {
+	return blacklist.every((banned) => !words.includes(banned));
 }
 
-function stripDiacritics(str: string): string {
+export function stripDiacritics(str: string): string {
 	return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 
-function stripPunctuation(str: string): string {
+export function stripPunctuation(str: string): string {
 	return str.replace(/[^\w\s]|_/g, "");
 }
 
 export function removeUnwantedAds(
-	seenList: number[],
+	seenIds: Set<number>,
 	blacklist: string[],
 	tradeType: string,
 	searchKey: string,
@@ -44,7 +42,7 @@ export function removeUnwantedAds(
 ): (ad: FinnAd) => boolean {
 	return (ad: FinnAd): boolean => {
 		// exit early if ad was already parsed at some other point
-		if (seenList.includes(Number(ad.ad_id))) return false;
+		if (seenIds.has(Number(ad.ad_id))) return false;
 
 		const description = stripPunctuation(ad.heading).replace("-", " ");
 

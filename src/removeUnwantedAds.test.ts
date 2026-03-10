@@ -1,33 +1,15 @@
-import { readCsv, writeToCsv } from "./csv.ts";
+import { readCsv } from "./csv.ts";
 
 import {
-	baseUrl,
 	blacklist,
-	hookUrl,
 	params,
-	search_key,
-	section,
 } from "./consts.ts";
 
-import { removeUnwantedAds } from "./validation.ts"; // <-- adjust this path to your actual module
+import { removeUnwantedAds } from "./validation.ts";
 import { writeFile, unlink } from "node:fs/promises";
 import { test, expect } from "bun:test";
 import type { FinnAd } from "./types/quicktype.ts";
-import { parse } from "csv-parse/sync";
 
-// function stripPunctuation(text: string): string {
-// 	return text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
-// }
-//
-// function stripDiacritics(text: string): string {
-// 	return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-// }
-//
-// function noneIncluded(blacklist: string[], words: string[]): boolean {
-// 	return blacklist.every((banned) => !words.includes(banned.toLowerCase()));
-// }
-
-// --- Test ---
 test("removeUnwantedAds filter using actual CSV data", async () => {
 	// CSV content with actual data.
 	const csvContent = `ad_id,heading,location,timestamp,date,amount,lat,lon,canonical_url,image
@@ -35,21 +17,13 @@ test("removeUnwantedAds filter using actual CSV data", async () => {
 350880502,Espresso og cappuccino maskin DeLonghi,Oslo,1714414693630,29.04.24,3000,59.90675,10.75783,https://www.finn.no/bap/forsale/ad.html?finnkode=350880502,https://images.finncdn.no/dynamic/default/2024/4/vertical-0/29/2/350/880/502_74635caa-29d6-44c5-a544-ade5ab1640e3.jpg
 131823830,Espresso maskin Lelit Mara håndlaget italiensk PL62 T. Veil pris 18.000!,Oslo,1714465440000,30.04.24,12000,59.95193,10.64475,https://www.finn.no/bap/forsale/ad.html?finnkode=131823830,https://images.finncdn.no/dynamic/default/2018/10/vertical-5/17/0/131/823/830_616650614.jpg`;
 
-	const csvData = parse(csvContent, {
-		columns: true,
-		skip_empty_lines: true,
-		relax_column_count: true,
-	});
-
 	const tempFilePath = "./temp_seen_ads.csv";
 
 	await writeFile(tempFilePath, csvContent, { encoding: "utf-8" });
-	await writeToCsv(csvData, tempFilePath);
 
 	const seenAds = await readCsv(tempFilePath);
 
-	const seenIds = seenAds.map((ad) => Number(ad.ad_id));
-	console.log(seenIds);
+	const seenIds = new Set(seenAds.map((ad) => Number(ad.ad_id)));
 
 	await unlink(tempFilePath);
 

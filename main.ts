@@ -1,4 +1,3 @@
-import assert from "node:assert";
 import { parseArgs } from "node:util";
 import { formatDiscordMsg } from "./src/format.ts";
 import { isFinnAd, removeUnwantedAds } from "./src/validation.ts";
@@ -9,12 +8,13 @@ import {
 	params,
 	search_key,
 	section,
+	validSections,
+	type Section,
 } from "./src/consts.ts";
 import { createRateLimitedQueue } from "./src/webhook.ts";
 import { readCsv, writeToCsv } from "./src/csv.ts";
 import { assembleQuery } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
-import type { FinnAd } from "./src/types/quicktype.ts";
 
 async function main() {
 	const start = performance.now();
@@ -30,13 +30,18 @@ async function main() {
 	});
 
 	const url = args.values.i || baseUrl;
-	assert(url, "url needs to be defined.");
+	if (!url) throw new Error("url needs to be defined.");
 
 	const sec = args.values.m || section;
+	if (!validSections.includes(sec as Section)) {
+		throw new Error(
+			`Invalid section "${sec}". Must be one of: ${validSections.join(", ")}`,
+		);
+	}
 
 	const d = args.values.d;
 
-	const inputUrl = url + assembleQuery(search_key(sec), params);
+	const inputUrl = url + assembleQuery(search_key(sec as Section), params);
 	console.log(inputUrl);
 
 	d && console.log("Scraping ", inputUrl);
@@ -45,30 +50,32 @@ async function main() {
 
 	d && outputUrl && console.log("Publishing to ", outputUrl);
 
-	const escapedQuery = params.q.replace(" ", "_");
+	const escapedQuery = params.q.replace(/[^a-zA-Z0-9_-]/g, "_");
 
-	const seenAds = await readCsv(`./data/${escapedQuery}.csv`);
-	const seenIds = seenAds.map((ad) => Number(ad.ad_id));
+	let seenAds: Record<string, string | undefined>[] = [];
+	try {
+		seenAds = await readCsv(`./data/${escapedQuery}.csv`);
+	} catch (err) {
+		console.warn("Failed to read CSV, starting fresh:", err);
+	}
+	const seenIds = new Set(seenAds.map((ad) => Number(ad.ad_id)));
 
 	const fetchData = await fetch(inputUrl);
 
-	assert(fetchData.ok, `fetch failed, ${fetchData.statusText}`);
+	if (!fetchData.ok) {
+		throw new Error(`Fetch failed: ${fetchData.status} ${fetchData.statusText}`);
+	}
 
 	const fetchJson = await fetchData.json();
 	const ads = fetchJson.docs;
 
-	assert(ads && ads.length > 0, "No ads found.");
+	if (!ads || ads.length === 0) {
+		console.log("No ads found.");
+		return end(start);
+	}
 
 	const wellFormedAds = ads.filter(isFinnAd);
 	console.log("found", wellFormedAds.length, "ads");
-
-	// SEARCH_ID_BAP_ALL filters away "gis bort"
-	// 67 filters for private
-	// console.log("seen", seenIds);
-	// console.log(
-	// 	"found",
-	// 	wellFormedAds.map((ad: FinnAd) => ad.id),
-	// );
 
 	const wantedAd = removeUnwantedAds(
 		seenIds,
@@ -82,7 +89,7 @@ async function main() {
 
 	if (validatedNewAds.length === 0) return end(start);
 
-	console.log("found", validatedNewAds, "interesting ads");
+	console.log("found", validatedNewAds.length, "interesting ads");
 
 	const parsedAds = validatedNewAds.map(parseAd);
 

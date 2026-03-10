@@ -2,7 +2,7 @@ const configJson = await import("../config.json", { with: { type: "json" } });
 const keepList = configJson.default.keep;
 
 type RawAd = Record<string, string | number | object>;
-type ParsedAd = Record<string, string | number>;
+export type ParsedAd = Record<string, string | number>;
 
 function parseObjectWithKeys(keysToKeep: string[]): (ad: RawAd) => ParsedAd {
 	return function (ad: RawAd): ParsedAd {
@@ -38,9 +38,7 @@ function parseObjectWithKeys(keysToKeep: string[]): (ad: RawAd) => ParsedAd {
 					return undefined;
 				}
 
-				return typeof value === "string"
-					? (value as string).replaceAll(",", "")
-					: value;
+				return value;
 			} else if (typeof value === "object") {
 				return getValueForKey(
 					remainingKeys.join("."),
@@ -62,9 +60,10 @@ function parseObjectWithKeys(keysToKeep: string[]): (ad: RawAd) => ParsedAd {
 	};
 }
 
+const parser = parseObjectWithKeys(keepList);
+
 export function parseAd(ad: RawAd): ParsedAd {
 	console.log("parsing", ad.heading);
-	const parser = parseObjectWithKeys(keepList);
 	return parser(ad);
 }
 

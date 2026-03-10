@@ -1,6 +1,7 @@
-import type { FilteredAndMassagedFinnAd } from "./types/index.ts";
-export function formatDiscordMsg(ad: FilteredAndMassagedFinnAd) {
+import type { ParsedAd } from "./dynamic_parser.ts";
+
+export function formatDiscordMsg(ad: ParsedAd) {
 	return {
-		content: `**${ad.heading}**, ${ad.location}: **${ad.amount}**\n${ad.canonical_url}`,
+		content: `**${ad.heading ?? "Unknown"}**, ${ad.location ?? "Unknown"}: **${ad.amount ?? "N/A"}**\n${ad.canonical_url ?? ""}`,
 	};
 }
