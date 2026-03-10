@@ -3,7 +3,7 @@ const configJson = await import("../config.json", { with: { type: "json" } });
 export const baseUrl = "https://www.finn.no/api/search-qf?";
 export const hookUrl = process.env.WEBHOOK_URL;
 
-export type SearchParams = {
+type SearchParams = {
 	q: string;
 	section: string;
 	category: string;
@@ -20,7 +20,6 @@ type Config = {
 	section: string;
 	params: SearchParams;
 	blacklist: string[];
-	keep: string[];
 };
 
 const config: Config = configJson.default;

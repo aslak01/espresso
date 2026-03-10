@@ -1,6 +1,6 @@
 import { Schema as S } from "@effect/schema";
 
-export const FinnAdSchema = S.Struct({
+const FinnAdSchema = S.Struct({
 	id: S.optional(S.String),
 	ad_id: S.Number,
 	heading: S.String,

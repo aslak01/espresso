@@ -35,17 +35,3 @@ blacklist {
   "kanne"
   "ariete"
 }
-
-keep {
-  "ad_id"
-  "heading"
-  "location"
-  "timestamp"
-  "price.amount"
-  "coordinates.lat"
-  "coordinates.lon"
-  "canonical_url"
-  "image.url"
-}
-
-
