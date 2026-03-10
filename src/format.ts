@@ -1,7 +1,7 @@
-import type { ParsedAd } from "./dynamic_parser.ts";
+import type { Ad, DiscordMessage } from "./types/index.ts";
 
-export function formatDiscordMsg(ad: ParsedAd) {
+export function formatDiscordMsg(ad: Ad): DiscordMessage {
 	return {
-		content: `**${ad.heading ?? "Unknown"}**, ${ad.location ?? "Unknown"}: **${ad.amount ?? "N/A"}**\n${ad.canonical_url ?? ""}`,
+		content: `**${ad.heading}**, ${ad.location}: **${ad.amount}**\n${ad.canonical_url}`,
 	};
 }

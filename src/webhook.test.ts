@@ -33,11 +33,11 @@ describe("createRateLimitedQueue", () => {
 		await queue.enqueueBatch([{ content: "hello" }]);
 
 		expect(fetchMock).toHaveBeenCalledTimes(1);
-		const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
-		expect(url).toBe("https://discord.com/api/webhooks/test");
-		expect(opts.method).toBe("POST");
-		expect(opts.headers).toEqual({ "Content-Type": "application/json" });
-		expect(opts.body).toBe(JSON.stringify({ content: "hello" }));
+		const call = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+		expect(call[0]).toBe("https://discord.com/api/webhooks/test");
+		expect(call[1].method).toBe("POST");
+		expect(call[1].headers).toEqual({ "Content-Type": "application/json" });
+		expect(call[1].body).toBe(JSON.stringify({ content: "hello" }));
 	});
 
 	test("sends multiple items sequentially", async () => {
@@ -76,7 +76,7 @@ describe("createRateLimitedQueue", () => {
 		await queue.enqueueBatch([{ content: "bad" }]);
 
 		expect(errorSpy).toHaveBeenCalled();
-		const msg = errorSpy.mock.calls[0]?.[0] as string;
+		const msg = (errorSpy.mock.calls[0] as unknown as [string])[0];
 		expect(msg).toContain("400");
 
 		console.error = origError;

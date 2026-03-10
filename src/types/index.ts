@@ -1,4 +1,4 @@
-import type { FinnAd } from "./quicktype.ts";
-import type { FilteredAndMassagedFinnAd } from "./finn.ts";
+import type { Ad, DiscordMessage } from "./finn.ts";
+import type { FinnAd } from "../schema.ts";
 
-export type { FilteredAndMassagedFinnAd, FinnAd };
+export type { Ad, DiscordMessage, FinnAd };

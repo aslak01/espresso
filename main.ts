@@ -1,24 +1,29 @@
 import { parseArgs } from "node:util";
 import { formatDiscordMsg } from "./src/format.ts";
-import { isFinnAd, removeUnwantedAds } from "./src/validation.ts";
+import { parseFinnAd, removeUnwantedAds } from "./src/validation.ts";
 import {
 	baseUrl,
 	blacklist,
 	hookUrl,
 	params,
 	search_key,
-	section,
 	validSections,
+	section,
 	type Section,
 } from "./src/consts.ts";
 import { createRateLimitedQueue } from "./src/webhook.ts";
-import { readCsv, writeToCsv } from "./src/csv.ts";
+import { readSeenIds, writeToCsv } from "./src/csv.ts";
 import { assembleQuery } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
 
-async function main() {
-	const start = performance.now();
+type CliArgs = {
+	inputUrl: string;
+	section: Section;
+	debug: boolean;
+	webhookUrl: string | undefined;
+};
 
+function parseCliArgs(): CliArgs {
 	const args = parseArgs({
 		args: Bun.argv.slice(2),
 		options: {
@@ -29,8 +34,8 @@ async function main() {
 		},
 	});
 
-	const url = args.values.i || baseUrl;
-	if (!url) throw new Error("url needs to be defined.");
+	const inputUrl = args.values.i || baseUrl;
+	if (!inputUrl) throw new Error("url needs to be defined.");
 
 	const sec = args.values.m || section;
 	if (!validSections.includes(sec as Section)) {
@@ -39,40 +44,55 @@ async function main() {
 		);
 	}
 
-	const d = args.values.d;
+	return {
+		inputUrl,
+		section: sec as Section,
+		debug: args.values.d ?? false,
+		webhookUrl: args.values.o || hookUrl,
+	};
+}
 
-	const inputUrl = url + assembleQuery(search_key(sec as Section), params);
-	console.log(inputUrl);
+async function main() {
+	const start = performance.now();
 
-	d && console.log("Scraping ", inputUrl);
+	const cli = parseCliArgs();
 
-	const outputUrl = args.values.o || hookUrl;
+	const queryUrl =
+		cli.inputUrl + assembleQuery(search_key(cli.section), params);
+	console.log(queryUrl);
 
-	d && outputUrl && console.log("Publishing to ", outputUrl);
+	cli.debug && console.log("Scraping ", queryUrl);
+	cli.debug && cli.webhookUrl && console.log("Publishing to ", cli.webhookUrl);
 
 	const escapedQuery = params.q.replace(/[^a-zA-Z0-9_-]/g, "_");
+	const csvPath = `./data/${escapedQuery}.csv`;
 
-	let seenAds: Record<string, string | undefined>[] = [];
+	// --- Boundary: CSV file ---
+	let seenIds = new Set<number>();
 	try {
-		seenAds = await readCsv(`./data/${escapedQuery}.csv`);
+		seenIds = await readSeenIds(csvPath);
 	} catch (err) {
 		console.warn("Failed to read CSV, starting fresh:", err);
 	}
-	const seenIds = new Set(seenAds.map((ad) => Number(ad.ad_id)));
 
-	const fetchData = await fetchWithRetry(inputUrl);
-
+	// --- Boundary: finn.no API ---
+	const fetchData = await fetchWithRetry(queryUrl);
 	const fetchJson = await fetchData.json();
-	const ads = fetchJson.docs;
+	const rawDocs: unknown[] = fetchJson.docs ?? [];
 
-	if (!ads || ads.length === 0) {
+	// Parse at boundary: unknown[] → FinnAd[]
+	const ads = rawDocs
+		.map(parseFinnAd)
+		.filter((ad) => ad !== null);
+
+	if (ads.length === 0) {
 		console.log("No ads found.");
 		return end(start);
 	}
 
-	const wellFormedAds = ads.filter(isFinnAd);
-	console.log("found", wellFormedAds.length, "ads");
+	console.log("found", ads.length, "ads");
 
+	// --- Core: typed data flows through, no more runtime checks ---
 	const wantedAd = removeUnwantedAds(
 		seenIds,
 		blacklist,
@@ -81,25 +101,25 @@ async function main() {
 		params.ad_type,
 	);
 
-	const validatedNewAds = wellFormedAds.filter(wantedAd);
+	const newAds = ads.filter(wantedAd);
 
-	if (validatedNewAds.length === 0) return end(start);
+	if (newAds.length === 0) return end(start);
 
-	console.log("found", validatedNewAds.length, "interesting ads");
+	console.log("found", newAds.length, "interesting ads");
 
-	const parsedAds = validatedNewAds.map(parseAd);
+	// FinnAd[] → Ad[] (typed mapping, no runtime checks)
+	const parsedAds = newAds.map(parseAd);
 
-	const writeCsv = writeToCsv(parsedAds, `./data/${escapedQuery}.csv`);
+	// --- Boundary: CSV write + webhook ---
+	const writeCsv = writeToCsv(parsedAds, csvPath);
 
-	if (outputUrl) {
+	if (cli.webhookUrl) {
 		const messages = parsedAds.map(formatDiscordMsg);
-		const queue = createRateLimitedQueue(outputUrl);
+		const queue = createRateLimitedQueue(cli.webhookUrl);
 		const sendWebhooks = queue.enqueueBatch(messages);
 
 		await Promise.all([sendWebhooks, writeCsv])
-			.then(() => {
-				return end(start, parsedAds.length);
-			})
+			.then(() => end(start, parsedAds.length))
 			.catch((err) => {
 				throw new Error(err);
 			});
@@ -107,9 +127,7 @@ async function main() {
 	}
 
 	await Promise.all([writeCsv])
-		.then(() => {
-			return end(start, parsedAds.length);
-		})
+		.then(() => end(start, parsedAds.length))
 		.catch((err) => {
 			throw new Error(err);
 		});

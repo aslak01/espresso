@@ -9,6 +9,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "csv": "^6.3.11"
+    "@effect/schema": "^0.75.5",
+    "csv": "^6.3.11",
+    "effect": "^3.19.19"
   }
 }

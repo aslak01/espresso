@@ -1,73 +1,23 @@
-const configJson = await import("../config.json", { with: { type: "json" } });
-const keepList = configJson.default.keep;
+import type { FinnAd } from "./schema.ts";
+import type { Ad } from "./types/index.ts";
 
-type RawAd = Record<string, string | number | object>;
-export type ParsedAd = Record<string, string | number>;
-
-function parseObjectWithKeys(keysToKeep: string[]): (ad: RawAd) => ParsedAd {
-	return function (ad: RawAd): ParsedAd {
-		if (!ad || typeof ad !== "object" || !Array.isArray(keysToKeep)) {
-			return {};
-		}
-
-		const parsedObject: ParsedAd = {};
-
-		function getValueForKey(
-			key: string,
-			obj: RawAd,
-		): string | number | undefined {
-			const nestedKeys = key.split(".");
-			const [firstKey, ...remainingKeys] = nestedKeys;
-
-			if (!Object.prototype.hasOwnProperty.call(obj, firstKey)) {
-				return undefined;
-			}
-
-			const value = obj[firstKey];
-
-			if (remainingKeys.length === 0) {
-				if (typeof value === "object") return undefined;
-
-				if (firstKey === "timestamp") {
-					const timestampValue = value as number;
-					parsedObject.timestamp = timestampValue;
-					parsedObject.date = formatTimestampToDate(timestampValue);
-					return undefined;
-				} else if (firstKey === "url") {
-					parsedObject.image = value;
-					return undefined;
-				}
-
-				return value;
-			} else if (typeof value === "object") {
-				return getValueForKey(
-					remainingKeys.join("."),
-					value as Record<string, string | number>,
-				);
-			} else {
-				return undefined;
-			}
-		}
-
-		keysToKeep.forEach((key) => {
-			const value = getValueForKey(key, ad);
-			if (value !== undefined) {
-				parsedObject[key.split(".").pop()!] = value;
-			}
-		});
-
-		return parsedObject;
+export function parseAd(ad: FinnAd): Ad {
+	console.log("parsing", ad.heading);
+	return {
+		ad_id: ad.ad_id,
+		heading: ad.heading,
+		location: ad.location,
+		timestamp: ad.timestamp,
+		date: formatTimestampToDate(ad.timestamp),
+		amount: ad.price.amount,
+		lat: ad.coordinates.lat,
+		lon: ad.coordinates.lon,
+		canonical_url: ad.canonical_url,
+		image: ad.image.url,
 	};
 }
 
-const parser = parseObjectWithKeys(keepList);
-
-export function parseAd(ad: RawAd): ParsedAd {
-	console.log("parsing", ad.heading);
-	return parser(ad);
-}
-
-function formatTimestampToDate(timestamp: string | number) {
+function formatTimestampToDate(timestamp: number) {
 	return new Date(timestamp).toLocaleDateString("no-NO", {
 		day: "2-digit",
 		month: "2-digit",

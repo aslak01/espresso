@@ -1,16 +1,15 @@
 import { test, expect, describe } from "bun:test";
 import {
-	isFinnAd,
+	parseFinnAd,
 	removeUnwantedAds,
 	noneIncluded,
 	stripDiacritics,
 	stripPunctuation,
 } from "./validation.ts";
-import type { FinnAd } from "./types/quicktype.ts";
+import type { FinnAd } from "./schema.ts";
 
 function makeFinnAd(overrides: Partial<FinnAd> = {}): FinnAd {
 	return {
-		type: "bap",
 		id: "123",
 		main_search_key: "SEARCH_ID_BAP_ALL",
 		heading: "Espresso Machine",
@@ -22,97 +21,104 @@ function makeFinnAd(overrides: Partial<FinnAd> = {}): FinnAd {
 			width: 300,
 			aspect_ratio: 1,
 		},
-		flags: [],
 		timestamp: 1714481940000,
 		coordinates: { lat: 59.9, lon: 10.7 },
 		ad_type: 67,
-		labels: [],
 		canonical_url: "https://www.finn.no/bap/forsale/ad.html?finnkode=123",
-		extras: [],
 		price: { amount: 500, currency_code: "NOK", price_unit: "kr" },
-		distance: 0,
 		trade_type: "Til salgs",
-		image_urls: ["https://img.example.com/1"],
 		ad_id: 123,
-		organisation_name: "Test",
 		...overrides,
 	};
 }
 
-// --- isFinnAd ---
+// --- parseFinnAd ---
 
-describe("isFinnAd", () => {
-	test("accepts a valid ad with string id", () => {
+describe("parseFinnAd", () => {
+	test("parses a valid ad with string id", () => {
 		const ad = makeFinnAd();
-		expect(isFinnAd(ad)).toBe(true);
+		const result = parseFinnAd(ad);
+		expect(result).not.toBeNull();
+		expect(result!.heading).toBe("Espresso Machine");
 	});
 
-	test("accepts a valid ad with only ad_id (number)", () => {
+	test("parses a valid ad with only ad_id (number)", () => {
 		const { id, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(true);
+		expect(parseFinnAd(rest)).not.toBeNull();
 	});
 
-	test("rejects null", () => {
-		expect(isFinnAd(null)).toBe(false);
+	test("returns null for null", () => {
+		expect(parseFinnAd(null)).toBeNull();
 	});
 
-	test("rejects undefined", () => {
-		expect(isFinnAd(undefined)).toBe(false);
+	test("returns null for undefined", () => {
+		expect(parseFinnAd(undefined)).toBeNull();
 	});
 
-	test("rejects primitives", () => {
-		expect(isFinnAd("string")).toBe(false);
-		expect(isFinnAd(42)).toBe(false);
-		expect(isFinnAd(true)).toBe(false);
+	test("returns null for primitives", () => {
+		expect(parseFinnAd("string")).toBeNull();
+		expect(parseFinnAd(42)).toBeNull();
+		expect(parseFinnAd(true)).toBeNull();
 	});
 
-	test("rejects empty object", () => {
-		expect(isFinnAd({})).toBe(false);
+	test("returns null for empty object", () => {
+		expect(parseFinnAd({})).toBeNull();
 	});
 
-	test("rejects object missing heading", () => {
+	test("returns null for object missing heading", () => {
 		const { heading, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(false);
+		expect(parseFinnAd(rest)).toBeNull();
 	});
 
-	test("rejects object missing location", () => {
+	test("returns null for object missing location", () => {
 		const { location, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(false);
+		expect(parseFinnAd(rest)).toBeNull();
 	});
 
-	test("rejects object missing timestamp", () => {
+	test("returns null for object missing timestamp", () => {
 		const { timestamp, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(false);
+		expect(parseFinnAd(rest)).toBeNull();
 	});
 
-	test("rejects object missing trade_type", () => {
+	test("returns null for object missing trade_type", () => {
 		const { trade_type, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(false);
+		expect(parseFinnAd(rest)).toBeNull();
 	});
 
-	test("rejects object missing image", () => {
+	test("returns null for object missing image", () => {
 		const { image, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(false);
+		expect(parseFinnAd(rest)).toBeNull();
 	});
 
-	test("rejects object missing price", () => {
+	test("returns null for object missing price", () => {
 		const { price, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(false);
+		expect(parseFinnAd(rest)).toBeNull();
 	});
 
-	test("rejects when heading is not a string", () => {
-		expect(isFinnAd({ ...makeFinnAd(), heading: 123 })).toBe(false);
+	test("returns null when heading is not a string", () => {
+		expect(parseFinnAd({ ...makeFinnAd(), heading: 123 })).toBeNull();
 	});
 
-	test("rejects when timestamp is not a number", () => {
-		expect(isFinnAd({ ...makeFinnAd(), timestamp: "not a number" })).toBe(
-			false,
-		);
+	test("returns null when timestamp is not a number", () => {
+		expect(
+			parseFinnAd({ ...makeFinnAd(), timestamp: "not a number" }),
+		).toBeNull();
 	});
 
-	test("rejects object with neither id nor ad_id", () => {
-		const { id, ad_id, ...rest } = makeFinnAd();
-		expect(isFinnAd(rest)).toBe(false);
+	test("returns null when price.amount is missing", () => {
+		expect(parseFinnAd({ ...makeFinnAd(), price: {} })).toBeNull();
+	});
+
+	test("returns null when coordinates.lat is missing", () => {
+		expect(parseFinnAd({ ...makeFinnAd(), coordinates: { lon: 10.7 } })).toBeNull();
+	});
+
+	test("returns null when image.url is missing", () => {
+		expect(parseFinnAd({ ...makeFinnAd(), image: { path: "/x" } })).toBeNull();
+	});
+
+	test("returns null when ad_id is not a number", () => {
+		expect(parseFinnAd({ ...makeFinnAd(), ad_id: "string" })).toBeNull();
 	});
 });
 
@@ -142,7 +148,6 @@ describe("noneIncluded", () => {
 	});
 
 	test("uses exact matching, not substring", () => {
-		// "pod" should NOT match "tripod"
 		expect(noneIncluded(["pod"], ["tripod"])).toBe(true);
 	});
 
@@ -160,7 +165,6 @@ describe("stripDiacritics", () => {
 	});
 
 	test("does not strip ø (does not decompose under NFD)", () => {
-		// ø is a standalone character, not a composed diacritic
 		expect(stripDiacritics("grønn")).toBe("grønn");
 	});
 
@@ -205,39 +209,60 @@ describe("stripPunctuation", () => {
 // --- removeUnwantedAds ---
 
 describe("removeUnwantedAds", () => {
-	const defaultFilter = (overrides: Partial<Parameters<typeof removeUnwantedAds>> = {}) =>
-		removeUnwantedAds(
-			overrides[0] ?? new Set<number>(),
-			overrides[1] ?? [],
-			overrides[2] ?? "Til salgs",
-			overrides[3] ?? "SEARCH_ID_BAP_ALL",
-			overrides[4] ?? "67",
-		);
-
 	test("rejects ads already in seenIds", () => {
-		const filter = defaultFilter([new Set([123])]);
+		const filter = removeUnwantedAds(
+			new Set([123]),
+			[],
+			"Til salgs",
+			"SEARCH_ID_BAP_ALL",
+			"67",
+		);
 		expect(filter(makeFinnAd({ ad_id: 123 }))).toBe(false);
 	});
 
 	test("accepts new ads matching all criteria", () => {
-		const filter = defaultFilter();
+		const filter = removeUnwantedAds(
+			new Set(),
+			[],
+			"Til salgs",
+			"SEARCH_ID_BAP_ALL",
+			"67",
+		);
 		expect(filter(makeFinnAd())).toBe(true);
 	});
 
 	test("rejects ads with mismatched trade_type", () => {
-		const filter = defaultFilter();
+		const filter = removeUnwantedAds(
+			new Set(),
+			[],
+			"Til salgs",
+			"SEARCH_ID_BAP_ALL",
+			"67",
+		);
 		expect(filter(makeFinnAd({ trade_type: "Gis bort" }))).toBe(false);
 	});
 
 	test("rejects ads with mismatched main_search_key", () => {
-		const filter = defaultFilter();
+		const filter = removeUnwantedAds(
+			new Set(),
+			[],
+			"Til salgs",
+			"SEARCH_ID_BAP_ALL",
+			"67",
+		);
 		expect(filter(makeFinnAd({ main_search_key: "SEARCH_ID_OTHER" }))).toBe(
 			false,
 		);
 	});
 
 	test("rejects ads with mismatched ad_type", () => {
-		const filter = defaultFilter();
+		const filter = removeUnwantedAds(
+			new Set(),
+			[],
+			"Til salgs",
+			"SEARCH_ID_BAP_ALL",
+			"67",
+		);
 		expect(filter(makeFinnAd({ ad_type: 99 }))).toBe(false);
 	});
 
@@ -260,14 +285,10 @@ describe("removeUnwantedAds", () => {
 			"SEARCH_ID_BAP_ALL",
 			"67",
 		);
-		// "tripod" contains "pod" but should NOT be filtered
 		expect(filter(makeFinnAd({ heading: "Tripod stand" }))).toBe(true);
 	});
 
 	test("stripPunctuation removes non-ASCII before diacritics normalization", () => {
-		// Note: stripPunctuation uses \w which is ASCII-only, so non-ASCII
-		// letters like é, å, ø are stripped as "punctuation" before
-		// stripDiacritics can normalize them. "Café" becomes "Caf", not "cafe".
 		const filter = removeUnwantedAds(
 			new Set(),
 			["caf"],
