@@ -1,6 +1,5 @@
 const configJson = await import("../config.json", { with: { type: "json" } });
 
-export const baseUrl = "https://www.finn.no/api/search-qf?";
 export const hookUrl = process.env.WEBHOOK_URL;
 
 type SearchParams = {

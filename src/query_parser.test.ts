@@ -1,15 +1,16 @@
 import { test, expect, describe } from "bun:test";
-import { assembleQuery } from "./query_parser.ts";
+import { buildSearchUrl } from "./query_parser.ts";
 
-describe("assembleQuery", () => {
-	test("includes searchkey and vertical=bap", () => {
-		const result = assembleQuery("SEARCH_ID_BAP_COMMON", {});
+describe("buildSearchUrl", () => {
+	test("non-job: includes searchkey and vertical=bap", () => {
+		const result = buildSearchUrl("torget", "SEARCH_ID_BAP_COMMON", {});
 		expect(result).toContain("searchkey=SEARCH_ID_BAP_COMMON");
 		expect(result).toContain("vertical=bap");
+		expect(result).toStartWith("https://www.finn.no/api/search-qf?");
 	});
 
-	test("includes normal params", () => {
-		const result = assembleQuery("SEARCH_ID_BAP_COMMON", {
+	test("non-job: includes normal params", () => {
+		const result = buildSearchUrl("torget", "SEARCH_ID_BAP_COMMON", {
 			q: "espresso",
 			radius: "30000",
 		});
@@ -18,7 +19,7 @@ describe("assembleQuery", () => {
 	});
 
 	test("excludes trade_type param", () => {
-		const result = assembleQuery("KEY", {
+		const result = buildSearchUrl("torget", "KEY", {
 			q: "espresso",
 			trade_type: "Til salgs",
 		});
@@ -27,7 +28,7 @@ describe("assembleQuery", () => {
 	});
 
 	test("excludes ad_type param", () => {
-		const result = assembleQuery("KEY", {
+		const result = buildSearchUrl("torget", "KEY", {
 			q: "espresso",
 			ad_type: "67",
 		});
@@ -35,7 +36,7 @@ describe("assembleQuery", () => {
 	});
 
 	test("excludes params with empty string values", () => {
-		const result = assembleQuery("KEY", {
+		const result = buildSearchUrl("torget", "KEY", {
 			q: "espresso",
 			category: "",
 		});
@@ -44,7 +45,21 @@ describe("assembleQuery", () => {
 	});
 
 	test("URL-encodes special characters", () => {
-		const result = assembleQuery("KEY", { q: "kaffe maskin" });
+		const result = buildSearchUrl("torget", "KEY", { q: "kaffe maskin" });
 		expect(result).toContain("q=kaffe+maskin");
+	});
+
+	test("jobb: uses new job search endpoint with searchkey in path", () => {
+		const result = buildSearchUrl("jobb", "SEARCH_ID_JOB_FULLTIME", {
+			q: "utvikler",
+			location: "1.20001.20061",
+		});
+		expect(result).toStartWith(
+			"https://www.finn.no/job/job-search-page/api/search/SEARCH_ID_JOB_FULLTIME?",
+		);
+		expect(result).toContain("q=utvikler");
+		expect(result).toContain("location=1.20001.20061");
+		expect(result).not.toContain("vertical=");
+		expect(result).not.toContain("searchkey=");
 	});
 });

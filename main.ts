@@ -2,7 +2,6 @@ import { parseArgs } from "node:util";
 import { formatDiscordMsg } from "./src/format.ts";
 import { parseFinnAd, removeUnwantedAds } from "./src/validation.ts";
 import {
-	baseUrl,
 	blacklist,
 	hookUrl,
 	params,
@@ -13,11 +12,11 @@ import {
 } from "./src/consts.ts";
 import { createRateLimitedQueue } from "./src/webhook.ts";
 import { readSeenIds, writeToCsv } from "./src/csv.ts";
-import { assembleQuery } from "./src/query_parser.ts";
+import { buildSearchUrl } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
 
 type CliArgs = {
-	inputUrl: string;
+	inputUrl: string | undefined;
 	section: Section;
 	debug: boolean;
 	webhookUrl: string | undefined;
@@ -34,8 +33,7 @@ function parseCliArgs(): CliArgs {
 		},
 	});
 
-	const inputUrl = args.values.i || baseUrl;
-	if (!inputUrl) throw new Error("url needs to be defined.");
+	const inputUrl = args.values.i;
 
 	const sec = args.values.m || section;
 	if (!validSections.includes(sec as Section)) {
@@ -58,7 +56,8 @@ async function main() {
 	const cli = parseCliArgs();
 
 	const queryUrl =
-		cli.inputUrl + assembleQuery(search_key(cli.section), params);
+		cli.inputUrl ??
+		buildSearchUrl(cli.section, search_key(cli.section), params);
 	console.log(queryUrl);
 
 	cli.debug && console.log("Scraping ", queryUrl);
