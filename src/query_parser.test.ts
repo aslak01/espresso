@@ -2,14 +2,16 @@ import { test, expect, describe } from "bun:test";
 import { buildSearchUrl } from "./query_parser.ts";
 
 describe("buildSearchUrl", () => {
-	test("non-job: includes searchkey and vertical=bap", () => {
+	test("torget: uses new recommerce endpoint with searchkey in path", () => {
 		const result = buildSearchUrl("torget", "SEARCH_ID_BAP_COMMON", {});
-		expect(result).toContain("searchkey=SEARCH_ID_BAP_COMMON");
-		expect(result).toContain("vertical=bap");
-		expect(result).toStartWith("https://www.finn.no/api/search-qf?");
+		expect(result).toStartWith(
+			"https://www.finn.no/recommerce/forsale/search/api/search/SEARCH_ID_BAP_COMMON?",
+		);
+		expect(result).not.toContain("searchkey=");
+		expect(result).not.toContain("vertical=");
 	});
 
-	test("non-job: includes normal params", () => {
+	test("torget: includes normal params", () => {
 		const result = buildSearchUrl("torget", "SEARCH_ID_BAP_COMMON", {
 			q: "espresso",
 			radius: "30000",
@@ -61,5 +63,23 @@ describe("buildSearchUrl", () => {
 		expect(result).toContain("location=1.20001.20061");
 		expect(result).not.toContain("vertical=");
 		expect(result).not.toContain("searchkey=");
+	});
+
+	test("bil: uses new mobility endpoint with searchkey in path", () => {
+		const result = buildSearchUrl("bil", "SEARCH_ID_CAR_USED", {
+			q: "tesla",
+		});
+		expect(result).toStartWith(
+			"https://www.finn.no/mobility/search/api/search/SEARCH_ID_CAR_USED?",
+		);
+		expect(result).toContain("q=tesla");
+		expect(result).not.toContain("vertical=");
+		expect(result).not.toContain("searchkey=");
+	});
+
+	test("eiendom: throws because new endpoint is not yet supported", () => {
+		expect(() =>
+			buildSearchUrl("eiendom", "SEARCH_ID_REALESTATE_HOMES", {}),
+		).toThrow(/eiendom/);
 	});
 });
