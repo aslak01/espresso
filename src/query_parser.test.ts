@@ -77,9 +77,20 @@ describe("buildSearchUrl", () => {
 		expect(result).not.toContain("searchkey=");
 	});
 
-	test("eiendom: throws because new endpoint is not yet supported", () => {
-		expect(() =>
-			buildSearchUrl("eiendom", "SEARCH_ID_REALESTATE_HOMES", {}),
-		).toThrow(/eiendom/);
+	test("eiendom: uses Remix .data loader (no searchkey in URL)", () => {
+		const result = buildSearchUrl("eiendom", "SEARCH_ID_REALESTATE_HOMES", {
+			location: "0.20061",
+		});
+		expect(result).toStartWith(
+			"https://www.finn.no/realestate/homes/search.html.data?",
+		);
+		expect(result).toContain("location=0.20061");
+		expect(result).not.toContain("SEARCH_ID_REALESTATE_HOMES");
+	});
+
+	test("throws for unknown section", () => {
+		expect(() => buildSearchUrl("nonexistent", "KEY", {})).toThrow(
+			/nonexistent/,
+		);
 	});
 });

@@ -1,31 +1,8 @@
+import { SECTION_DEFAULTS } from "./section_defaults.ts";
+
 const configJson = await import("../config.json", { with: { type: "json" } });
 
 export const hookUrl = process.env.WEBHOOK_URL;
-
-type SearchParams = {
-	q: string;
-	section: string;
-	category: string;
-	sub_category: string;
-	trade_type: string;
-	search_key: string;
-	ad_type: string;
-	radius: string;
-	lat: string;
-	lon: string;
-};
-
-type Config = {
-	section: string;
-	params: SearchParams;
-	blacklist: string[];
-};
-
-const config: Config = configJson.default;
-
-export const params: SearchParams = config.params;
-export const section: string = config.section;
-export const blacklist: string[] = config.blacklist;
 
 const searchkey_prefix = "SEARCH_ID_";
 const searchkey_postfix = {
@@ -40,4 +17,32 @@ export type Section = keyof typeof searchkey_postfix;
 
 export function search_key(market: Section): string {
 	return searchkey_prefix + searchkey_postfix[market];
+}
+
+type SectionConfig = {
+	params?: Record<string, string>;
+	blacklist?: string[];
+};
+
+type Config = {
+	default_section: Section;
+	sections: Partial<Record<Section, SectionConfig>>;
+};
+
+const config: Config = configJson.default;
+
+export const defaultSection: Section = config.default_section;
+
+export type ResolvedConfig = {
+	params: Record<string, string>;
+	blacklist: string[];
+};
+
+export function configFor(section: Section): ResolvedConfig {
+	const user = config.sections[section] ?? {};
+	const defaults = SECTION_DEFAULTS[section] ?? {};
+	return {
+		params: { ...defaults, ...(user.params ?? {}) },
+		blacklist: user.blacklist ?? [],
+	};
 }

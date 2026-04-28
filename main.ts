@@ -2,18 +2,18 @@ import { parseArgs } from "node:util";
 import { formatDiscordMsg } from "./src/format.ts";
 import { parseFinnAd, removeUnwantedAds } from "./src/validation.ts";
 import {
-	blacklist,
+	configFor,
+	defaultSection,
 	hookUrl,
-	params,
 	search_key,
 	validSections,
-	section,
 	type Section,
 } from "./src/consts.ts";
 import { createRateLimitedQueue } from "./src/webhook.ts";
 import { readSeenIds, writeToCsv } from "./src/csv.ts";
 import { buildSearchUrl } from "./src/query_parser.ts";
 import { parseAd } from "./src/dynamic_parser.ts";
+import { extractEiendomDocs } from "./src/eiendom.ts";
 
 type CliArgs = {
 	inputUrl: string | undefined;
@@ -35,7 +35,7 @@ function parseCliArgs(): CliArgs {
 
 	const inputUrl = args.values.i;
 
-	const sec = args.values.m || section;
+	const sec = args.values.m || defaultSection;
 	if (!validSections.includes(sec as Section)) {
 		throw new Error(
 			`Invalid section "${sec}". Must be one of: ${validSections.join(", ")}`,
@@ -54,6 +54,7 @@ async function main() {
 	const start = performance.now();
 
 	const cli = parseCliArgs();
+	const { params, blacklist } = configFor(cli.section);
 
 	const queryUrl =
 		cli.inputUrl ??
@@ -63,8 +64,7 @@ async function main() {
 	cli.debug && console.log("Scraping ", queryUrl);
 	cli.debug && cli.webhookUrl && console.log("Publishing to ", cli.webhookUrl);
 
-	const escapedQuery = params.q.replace(/[^a-zA-Z0-9_-]/g, "_");
-	const csvPath = `./data/${escapedQuery}.csv`;
+	const csvPath = `./data/${csvFileStem(cli.section, params.q)}.csv`;
 
 	// --- Boundary: CSV file ---
 	let seenIds = new Set<number>();
@@ -77,7 +77,10 @@ async function main() {
 	// --- Boundary: finn.no API ---
 	const fetchData = await fetchWithRetry(queryUrl);
 	const fetchJson = await fetchData.json();
-	const rawDocs: unknown[] = fetchJson.docs ?? [];
+	const rawDocs: unknown[] =
+		cli.section === "eiendom"
+			? extractEiendomDocs(fetchJson)
+			: (fetchJson.docs ?? []);
 
 	// Parse at boundary: unknown[] → FinnAd[]
 	const ads = rawDocs
@@ -157,6 +160,11 @@ async function fetchWithRetry(
 	}
 
 	throw new Error("Unreachable");
+}
+
+function csvFileStem(section: Section, q: string | undefined): string {
+	if (q) return q.replace(/[^a-zA-Z0-9_-]/g, "_");
+	return section;
 }
 
 function end(start: number, processedAds = 0) {

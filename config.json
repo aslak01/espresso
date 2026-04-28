@@ -1,37 +1,36 @@
 {
-  "section": "torget",
-  "params": {
-    "q": "espresso",
-    "section": "torget",
-    "category": "",
-    "sub_category": "1.93.3216",
-    "trade_type": "Til salgs",
-    "search_key": "SEARCH_ID_BAP_ALL",
-    "ad_type": "67",
-    "radius": "30000",
-    "lat": "59.85",
-    "lon": "10.45"
-  },
-  "blacklist": [
-    "bialetti",
-    "ibili",
-    "integrert",
-    "automatisk",
-    "kapsel",
-    "kapsler",
-    "pod",
-    "nespresso",
-    "nescafe",
-    "aeropress",
-    "moka",
-    "tyrkisk",
-    "electrolux",
-    "siemens",
-    "jura",
-    "tassimo",
-    "dualit",
-    "kitchenaid",
-    "kanne",
-    "ariete"
-  ]
+  "default_section": "torget",
+  "sections": {
+    "torget": {
+      "params": {
+        "q": "espresso",
+        "sub_category": "1.93.3216",
+        "radius": "30000",
+        "lat": "59.85",
+        "lon": "10.45"
+      },
+      "blacklist": [
+        "bialetti",
+        "ibili",
+        "integrert",
+        "automatisk",
+        "kapsel",
+        "kapsler",
+        "pod",
+        "nespresso",
+        "nescafe",
+        "aeropress",
+        "moka",
+        "tyrkisk",
+        "electrolux",
+        "siemens",
+        "jura",
+        "tassimo",
+        "dualit",
+        "kitchenaid",
+        "kanne",
+        "ariete"
+      ]
+    }
+  }
 }

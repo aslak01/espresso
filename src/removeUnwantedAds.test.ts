@@ -1,6 +1,8 @@
 import { readSeenIds } from "./csv.ts";
-import { blacklist, params } from "./consts.ts";
+import { configFor } from "./consts.ts";
 import { removeUnwantedAds } from "./validation.ts";
+
+const { params, blacklist } = configFor("torget");
 import { writeFile, unlink } from "node:fs/promises";
 import { test, expect } from "bun:test";
 import type { FinnAd } from "./schema.ts";
